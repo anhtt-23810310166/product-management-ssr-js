@@ -45,6 +45,39 @@ module.exports.index = async (req, res) => {
     }
 };
 
+// [GET] /admin/articles/detail/:id
+module.exports.detail = async (req, res) => {
+    try {
+        const article = await articleService.findById(req.params.id);
+        if (!article) {
+            req.flash("error", "Bài viết không tồn tại!");
+            return res.redirect(`${prefixAdmin}/articles`);
+        }
+
+        // Lấy tên danh mục
+        let categoryName = "";
+        if (article.article_category_id) {
+            const category = await ArticleCategory.findById(article.article_category_id);
+            if (category) categoryName = category.title;
+        }
+
+        res.render("admin/pages/articles/detail", {
+            pageTitle: article.title,
+            currentPage: "articles",
+            breadcrumbs: [
+                { title: "Bài viết", link: `${prefixAdmin}/articles` },
+                { title: "Chi tiết" }
+            ],
+            article: article,
+            categoryName: categoryName
+        });
+    } catch (error) {
+        console.log(error);
+        req.flash("error", "Có lỗi xảy ra!");
+        res.redirect(`${prefixAdmin}/articles`);
+    }
+};
+
 // [GET] /admin/articles/create
 module.exports.create = async (req, res) => {
     try {

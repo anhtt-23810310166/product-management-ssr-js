@@ -1,67 +1,124 @@
 extends ../../layouts/default
-include ../../mixins/category-sidebar.pug
 
 block main
   .container.py-4
+    //- Breadcrumb
     nav(aria-label="breadcrumb")
-      ol.breadcrumb.bg-transparent.px-0.pb-3.pt-0.mb-0(class="tz-auto-267f6d")
+      ol.breadcrumb.bg-transparent.px-0.pb-3.pt-0.mb-0.tz-breadcrumb-nav
         li.breadcrumb-item
           a.text-muted(href="/") Trang chủ
         if currentCategory
           li.breadcrumb-item
-            a.text-muted(href="/articles") Bài viết
-          li.breadcrumb-item.active(aria-current="page" class="tz-auto-9902e1")= currentCategory.title
+            a.text-muted(href="/articles") Tin tức & Blog
+          li.breadcrumb-item.active.tz-breadcrumb-active(aria-current="page")= currentCategory.title
         else
-          li.breadcrumb-item.active(aria-current="page" class="tz-auto-9902e1") Bài viết
+          li.breadcrumb-item.active.tz-breadcrumb-active(aria-current="page") Tin tức & Blog
 
-    .row
-      //- Sidebar danh mục
-      .col-lg-3.col-md-4.mb-4
-        +categorySidebar("Danh mục bài viết", "Tất cả", "/articles", articleCategories, currentCategory)
+    //- ===== HERO FEATURED ARTICLE =====
+    if featuredArticle && !currentCategory
+      a.text-decoration-none(href=`/articles/${featuredArticle.slug}`)
+        .tz-blog-hero.mb-5.position-relative.overflow-hidden.rounded(style="min-height: 420px; background: #1a1a2e")
+          if featuredArticle.thumbnail
+            .tz-blog-hero-bg(style=`background-image: url('${featuredArticle.thumbnail}')`)
+          .tz-blog-hero-overlay
+          .tz-blog-hero-content.position-absolute.w-100.h-100.d-flex.flex-column.justify-content-end.p-4.p-md-5
+            if featuredArticle.featured
+              span.badge.mb-3(style="background: linear-gradient(90deg, #ee5a24, #ff6b6b); color: #fff; padding: 6px 14px; font-size: 0.75rem; border-radius: 4px; letter-spacing: 0.5px")
+                i.fas.fa-star.mr-1
+                | NỔI BẬT
+            h1.text-white.font-weight-bold.mb-3(style="font-size: 2rem; line-height: 1.3; text-shadow: 0 2px 8px rgba(0,0,0,.3)")= featuredArticle.title
+            if featuredArticle.description
+              div.text-white.mb-3(style="font-size: 1rem; opacity: 0.9; max-width: 600px; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;")!= featuredArticle.description
+            .d-flex.align-items-center
+              if featuredArticle.createdAt
+                span.text-white(style="opacity: 0.7; font-size: 0.85rem")
+                  i.far.fa-clock.mr-1
+                  = featuredArticle.createdAt.toLocaleDateString('vi-VN')
+              span.text-white.ml-3(style="opacity: 0.7; font-size: 0.85rem")
+                i.far.fa-eye.mr-1
+                | Đọc thêm
+                i.fas.fa-chevron-right.ml-1(style="font-size: 0.7rem")
 
-      //- Nội dung chính
-      .col-lg-9.col-md-8
-        .d-flex.align-items-center.mb-4.pb-3(class="tz-auto-fd019f")
-          .page-header-left
-            h3.mb-1(class="tz-auto-4280d6")= currentCategory ? currentCategory.title : 'Tất cả bài viết'
-            span.text-muted(class="tz-auto-267f6d") Tìm thấy <strong>#{articles.length}</strong> bài viết
-            
-          .ml-auto
-            if currentCategory
-              a.btn.btn-sm.btn-outline-secondary(href="/articles")
-                i.fas.fa-times.mr-1
-                | Bỏ lọc
+    //- ===== CATEGORY FILTER TABS =====
+    .tz-blog-tabs.mb-4.d-flex.flex-wrap.align-items-center
+      a.tz-blog-tab(href="/articles" class=(currentCategory ? '' : 'active'))
+        | Tất cả
+      if categories && categories.length > 0
+        each cat in categories
+          a.tz-blog-tab(href=`/articles?category=${cat.slug}` class=(currentCategory && currentCategory._id.toString() === cat._id.toString() ? 'active' : ''))
+            = cat.title
 
-        if articles && articles.length > 0
-          .row
-            each article in articles
-              .col-lg-4.col-md-6.mb-4
-                .card.tz-product-card.border-0.shadow-sm
-                  a(href=`/articles/detail/${article.slug}`)
-                    if article.thumbnail
-                      img.card-img-top(src=article.thumbnail alt=article.title class="tz-auto-b052ce")
-                    else
-                      .card-img-top.d-flex.align-items-center.justify-content-center.bg-light(class="tz-auto-70de97")
-                        i.fas.fa-newspaper.fa-3x
-                  .card-body.p-3.d-flex.flex-column
-                    h6.card-title.tz-product-title.mb-2(class="tz-auto-d7e999")
-                      a.text-dark(href=`/articles/detail/${article.slug}`)= article.title
-                    
-                    if article.description
-                      p.text-muted.mb-3(class="tz-auto-23e787")= article.description
-                      
-                    .mt-0
-                      if article.createdAt
-                        span.text-muted(class="tz-auto-345895")
-                          i.far.fa-clock.mr-1
-                          = article.createdAt.toLocaleDateString('vi-VN')
+    //- ===== ARTICLE SECTION HEADER =====
+    .d-flex.align-items-center.mb-4
+      h4.font-weight-bold.mb-0(style="color: var(--tz-heading, #1a1a2e)")
+        = currentCategory ? currentCategory.title : 'Bài viết mới nhất'
+      span.text-muted.ml-3(style="font-size: 0.85rem") #{articles.length} bài viết
+      if currentCategory
+        a.ml-auto.text-muted(href="/articles" style="font-size: 0.85rem; text-decoration: none")
+          i.fas.fa-times.mr-1
+          | Bỏ lọc
+
+    //- ===== ARTICLE GRID =====
+    if articles && articles.length > 0
+      .row
+        each article in articles
+          .col-lg-4.col-md-6.mb-4
+            .tz-blog-card.h-100
+              a.d-block.overflow-hidden.position-relative(href=`/articles/${article.slug}`)
+                if article.thumbnail
+                  .tz-blog-card-img(style=`background-image: url('${article.thumbnail}')`)
+                else
+                  .tz-blog-card-img.d-flex.align-items-center.justify-content-center(style="background: var(--tz-light, #f5f6fa)")
+                    i.fas.fa-newspaper.fa-3x.text-muted
+                if article.featured
+                  span.badge.position-absolute(style="top: 12px; left: 12px; background: linear-gradient(90deg, #ee5a24, #ff6b6b); color: #fff; padding: 4px 10px; font-size: 0.7rem; border-radius: 4px")
+                    i.fas.fa-star.mr-1
+                    | Nổi bật
+              .tz-blog-card-body.p-3
+                if article.createdAt
+                  .text-muted.mb-2(style="font-size: 0.78rem")
+                    i.far.fa-clock.mr-1
+                    = article.createdAt.toLocaleDateString('vi-VN')
+                h6.tz-blog-card-title
+                  a(href=`/articles/${article.slug}`)= article.title
+                if article.description
+                  div.tz-blog-card-desc(style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;")!= article.description
+                a.tz-blog-read-more(href=`/articles/${article.slug}`)
+                  | Đọc thêm
+                  i.fas.fa-chevron-right.ml-1
+    else
+      .text-center.py-5
+        i.fas.fa-newspaper.fa-4x.text-muted.mb-3
+        h4.text-muted Không có bài viết nào
+        if currentCategory
+          p.text-muted Danh mục này chưa có bài viết
+          a.btn.btn-outline-secondary(href="/articles") Xem tất cả bài viết
         else
-          .text-center.py-5
-            .empty-state
-              i.fas.fa-newspaper.fa-4x.text-muted.mb-3
-              h4.text-muted Không có bài viết nào
-              if currentCategory
-                p.text-muted Danh mục này chưa có bài viết
-                a.btn.btn-outline-secondary(href="/articles") Xem tất cả bài viết
-              else
-                p.text-muted Hiện tại chưa có bài viết nào để hiển thị
+          p.text-muted Hiện tại chưa có bài viết nào
+
+  //- Blog CSS
+  style.
+    .tz-blog-hero { border-radius: var(--tz-radius); cursor: pointer; transition: transform 0.3s ease, box-shadow 0.3s ease; }
+    .tz-blog-hero:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,0,0,.2); }
+    .tz-blog-hero-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; transition: transform 0.5s ease; }
+    .tz-blog-hero:hover .tz-blog-hero-bg { transform: scale(1.03); }
+    .tz-blog-hero-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(transparent 30%, rgba(0,0,0,.75) 100%); }
+    .tz-blog-hero-content { z-index: 2; }
+
+    .tz-blog-tabs { gap: 8px; border-bottom: 2px solid var(--tz-border); padding-bottom: 0; }
+    .tz-blog-tab { display: inline-block; padding: 10px 20px; font-size: 0.85rem; font-weight: 600; color: var(--tz-text-secondary); text-decoration: none; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.2s ease; border-radius: 0; font-family: inherit; }
+    .tz-blog-tab:hover { color: var(--tz-text); text-decoration: none; }
+    .tz-blog-tab.active { color: var(--tz-blue); border-bottom-color: var(--tz-blue); }
+
+    .tz-blog-card { background: var(--tz-white); border-radius: var(--tz-radius); overflow: hidden; box-shadow: var(--tz-shadow); transition: transform 0.3s ease, box-shadow 0.3s ease; }
+    .tz-blog-card:hover { transform: translateY(-4px); box-shadow: var(--tz-shadow-hover); }
+    .tz-blog-card-img { width: 100%; height: 200px; background-size: cover; background-position: center; transition: transform 0.4s ease; }
+    .tz-blog-card:hover .tz-blog-card-img { transform: scale(1.05); }
+    .tz-blog-card-title { font-size: 0.95rem; font-weight: 700; line-height: 1.4; margin-bottom: 8px; font-family: inherit; }
+    .tz-blog-card-title a { color: var(--tz-text); text-decoration: none; transition: color 0.2s ease; }
+    .tz-blog-card-title a:hover { color: var(--tz-blue); }
+    .tz-blog-card-desc { font-size: 0.82rem; color: var(--tz-text-secondary); line-height: 1.5; margin-bottom: 12px; }
+    .tz-blog-read-more { font-size: 0.82rem; font-weight: 600; color: var(--tz-blue); text-decoration: none; transition: all 0.2s ease; font-family: inherit; }
+    .tz-blog-read-more:hover { color: var(--tz-blue-dark); text-decoration: none; }
+    .tz-blog-read-more i { font-size: 0.65rem; transition: transform 0.2s ease; }
+    .tz-blog-read-more:hover i { transform: translateX(3px); }

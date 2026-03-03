@@ -46,17 +46,41 @@ module.exports.index = async (req, res) => {
         const articles = await Article.find(find)
             .sort({ position: "desc", createdAt: -1 });
 
+        // Bài viết nổi bật (featured hoặc bài mới nhất)
+        let featuredArticle = null;
+        if (!currentCategory) {
+            featuredArticle = await Article.findOne({
+                status: "active",
+                deleted: false,
+                featured: true
+            }).sort({ createdAt: -1 });
+
+            if (!featuredArticle && articles.length > 0) {
+                featuredArticle = articles[0];
+            }
+        }
+
+        // Lấy danh sách danh mục (flat) cho tabs
+        const categories = await ArticleCategory.find({
+            status: "active",
+            deleted: false
+        }).sort({ position: "asc" });
+
         res.render("client/pages/articles/index", {
-            title: currentCategory ? currentCategory.title : "Bài viết",
+            title: currentCategory ? currentCategory.title : "Tin tức & Blog",
             articles,
-            currentCategory
+            currentCategory,
+            featuredArticle,
+            categories
         });
     } catch (error) {
         console.log(error);
         res.render("client/pages/articles/index", {
-            title: "Bài viết",
+            title: "Tin tức & Blog",
             articles: [],
-            currentCategory: null
+            currentCategory: null,
+            featuredArticle: null,
+            categories: []
         });
     }
 };

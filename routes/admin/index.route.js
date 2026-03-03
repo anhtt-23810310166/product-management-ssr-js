@@ -14,6 +14,7 @@ const orderRoutes = require("./order.route");
 const userRoutes = require("./user.route");
 const chatRoutes = require("./chat.route");
 const reviewRoutes = require("./review.route");
+const flashSaleRoutes = require("./flash-sale.route");
 
 const authMiddleware = require("../../middlewares/admin/auth.middleware");
 
@@ -119,5 +120,12 @@ module.exports = (app) => {
         `${PATH_ADMIN}/chat`,
         authMiddleware.requirePermission("chat_view"),
         chatRoutes
+    );
+
+    // Quản lý Flash Sale - cần quyền flash-sale_view
+    app.use(
+        `${PATH_ADMIN}/flash-sale`,
+        authMiddleware.requirePermission("flash-sale_view"),
+        flashSaleRoutes
     );
 }

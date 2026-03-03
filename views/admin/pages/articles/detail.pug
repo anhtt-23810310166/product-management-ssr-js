@@ -1,0 +1,65 @@
+extends ../../layouts/default.pug
+include ../../mixins/page-header.pug
+
+block main
+  +pageHeader("Chi tiết bài viết", article.title)
+
+  .row
+    .col-lg-8
+      .admin-form-card.mb-4
+        if article.thumbnail
+          .mb-4
+            img(src=article.thumbnail alt=article.title style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 6px")
+
+        h3.mb-3(style="font-weight: 700; color: var(--text-primary)")= article.title
+
+        .d-flex.flex-wrap.gap-2.mb-4(style="gap: 12px")
+          if categoryName
+            span.category-tag
+              i.fas.fa-folder.mr-1
+              = categoryName
+          span.category-tag
+            i.far.fa-clock.mr-1
+            = article.createdAt ? article.createdAt.toLocaleDateString('vi-VN') : '--'
+          span.category-tag
+            = article.status === 'active' ? 'Hoạt động' : 'Dừng'
+          if article.featured
+            span.category-tag(style="background: #fff3e0; color: #f57c00")
+              i.fas.fa-star.mr-1
+              | Nổi bật
+          if article.position
+            span.category-tag
+              i.fas.fa-sort.mr-1
+              | Vị trí: #{article.position}
+
+        hr.mb-4
+
+        .content-html(style="font-size: 0.9rem; line-height: 1.75; color: var(--text-secondary)")
+          != article.description
+
+    .col-lg-4
+      .admin-form-card.mb-4
+        h6.form-label.mb-3
+          i.fas.fa-info-circle.mr-2
+          | Thông tin
+        .mb-3
+          .text-muted.mb-1(style="font-size: 0.78rem") Slug
+          .text-break(style="font-size: 0.85rem; font-weight: 500; color: var(--text-primary)")= article.slug
+        .mb-3
+          .text-muted.mb-1(style="font-size: 0.78rem") Ngày tạo
+          div(style="font-size: 0.85rem; font-weight: 500; color: var(--text-primary)")= article.createdAt ? article.createdAt.toLocaleString('vi-VN') : '--'
+        .mb-3
+          .text-muted.mb-1(style="font-size: 0.78rem") Cập nhật lần cuối
+          div(style="font-size: 0.85rem; font-weight: 500; color: var(--text-primary)")= article.updatedAt ? article.updatedAt.toLocaleString('vi-VN') : '--'
+
+      .admin-form-card
+        h6.form-label.mb-3
+          i.fas.fa-cog.mr-2
+          | Hành động
+        .d-flex.flex-column(style="gap: 8px")
+          a.btn-submit.text-center(href=`${prefixAdmin}/articles/edit/${article._id}`)
+            i.fas.fa-edit.mr-1
+            | Chỉnh sửa
+          a.btn-cancel.text-center(href=`${prefixAdmin}/articles`)
+            i.fas.fa-arrow-left.mr-1
+            | Quay lại danh sách

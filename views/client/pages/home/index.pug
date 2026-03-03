@@ -21,9 +21,9 @@ block main
           h1.tz-hero-title iPhone 15 Pro Max#[br] Titan Tự Nhiên
           p.tz-hero-desc.mt-3 Khung viền titan. Chip A17 Pro mạnh mẽ. Nút Tác Vụ hoàn toàn mới. Sẵn hàng ngay hôm nay.
           .mt-4.d-flex
-            a.btn.btn-light.tz-hero-btn.mr-3(href="/products")
+            a.btn.btn-light.tz-hero-btn.mr-3(href="/products/detail/iphone-15-pro-max-titan-tu-nhien")
               span.font-weight-bold.text-dark Mua ngay
-            a.btn.btn-outline-light.tz-hero-btn(href="/products")
+            a.btn.btn-outline-light.tz-hero-btn(href="/products/detail/iphone-15-pro-max-titan-tu-nhien")
               span Xem chi tiết
 
     //- ===== 2. FEATURES BAR =====
@@ -74,30 +74,30 @@ block main
                 h6= cat.title
 
     //- ===== 4. FLASH SALE =====
-    if featuredProducts && featuredProducts.length > 0
-      .tz-flashsale-wrapper.mb-5
+    if flashSale && flashSale.products && flashSale.products.length > 0
+      .tz-flashsale-wrapper.mb-5#flashSaleSection(data-end-time=flashSale.endTime.toISOString())
         .d-flex.align-items-center.justify-content-between.mb-4.flex-wrap
           .d-flex.align-items-center
             h3.tz-flash-title.mb-0.mr-3
               i.fas.fa-bolt.mr-2
-              | FLASH SALE
+              | #{flashSale.title || 'FLASH SALE'}
             .tz-countdown.ml-3.d-none.d-md-flex
               span.text-white.mr-2.tz-countdown-label Kết thúc trong
-              .cd-box 02
+              .cd-box#cd-hours 00
               span.text-white.mx-1 :
-              .cd-box 15
+              .cd-box#cd-minutes 00
               span.text-white.mx-1 :
-              .cd-box 48
+              .cd-box#cd-seconds 00
           a.text-white.tz-view-all(href="/products")
             | Xem tất cả
             i.fas.fa-arrow-right.ml-2
 
         .row
-          each product in featuredProducts
+          each product in flashSale.products
             .col-lg-3.col-md-6.mb-3
               .tz-flash-card
-                if product.discountPercentage > 0
-                  .tz-badge-discount -#{product.discountPercentage}%
+                if product.flashDiscountPercentage > 0
+                  .tz-badge-discount -#{product.flashDiscountPercentage}%
                 a(href=`/products/detail/${product.slug}`)
                   .card-img-wrap
                     img(src=(product.thumbnail || "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=600&auto=format&fit=crop") alt=product.title)
@@ -105,18 +105,20 @@ block main
                   h6.card-title
                     a(href=`/products/detail/${product.slug}`)= product.title
 
-                  if product.discountPercentage > 0
-                    - const salePrice = Math.round(product.price * (1 - product.discountPercentage / 100))
+                  if product.flashDiscountPercentage > 0
+                    - const salePrice = Math.round(product.price * (1 - product.flashDiscountPercentage / 100))
                     .tz-price-sale #{salePrice.toLocaleString('vi-VN')}₫
                     .tz-price-original #{product.price.toLocaleString('vi-VN')}₫
                   else
                     .tz-price-sale #{product.price ? product.price.toLocaleString('vi-VN') + '₫' : 'Liên hệ'}
 
+                  - const soldPercent = product.flashStock > 0 ? Math.min(Math.round((product.flashSold / product.flashStock) * 100), 100) : 0
                   .tz-sold-bar.mt-2
-                    .tz-sold-bar-fill(class="tz-auto-526a45")
+                    .tz-sold-bar-fill(style=`width: ${soldPercent}%`)
                   .d-flex.justify-content-between.align-items-center.mt-2
-                    small.text-muted.tz-sold-count Đã bán #{Math.floor(Math.random() * 100 + 20)}
+                    small.text-muted.tz-sold-count Đã bán #{product.flashSold || 0}/#{product.flashStock}
                     a.tz-flash-btn.tz-flash-btn-sm.px-3(href=`/products/detail/${product.slug}`) Mua ngay
+
 
     //- ===== 5. HÀNG MỚI VỀ =====
     if newestProducts && newestProducts.length > 0
@@ -149,29 +151,7 @@ block main
             .col-lg-3.col-md-6.mb-4
               +productCard(product)
 
-    //- ===== 7. BÀI VIẾT NỔI BẬT =====
-    if featuredArticles && featuredArticles.length > 0
-      .tz-section.mb-5
-        .d-flex.justify-content-between.align-items-end.mb-4
-          div
-            h4.tz-section-title.mb-1 Bài viết nổi bật
-            p.text-muted.mb-0.tz-section-desc Những thông tin công nghệ mới nhất
-          a.tz-view-all(href="/articles")
-            | Xem tất cả
-            i.fas.fa-arrow-right.ml-2
-
-        .row
-          each article in featuredArticles.slice(0, 4)
-            .col-lg-3.col-md-6.mb-4
-              .card.tz-product-card.h-100.border-0
-                a(href=`/articles/detail/${article.slug}`)
-                  img.card-img-top.tz-article-card-img(src=(article.thumbnail || "https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=600&auto=format&fit=crop"))
-                .card-body.p-3
-                  h6.card-title.tz-product-title.tz-product-title-sm.mb-2
-                    a.text-dark(href=`/articles/detail/${article.slug}`)= article.title
-                  p.text-muted.mb-0.tz-article-desc-truncate= article.description || "Nội dung bài viết đang được cập nhật..."
-
-    //- ===== 8. DOUBLE BANNERS =====
+    //- ===== 7. DOUBLE BANNERS =====
     .row.mb-5
       .col-md-6.mb-4.mb-md-0
         .tz-mini-banner.position-relative.rounded.overflow-hidden
@@ -189,3 +169,51 @@ block main
             h4.text-white.font-weight-bold Laptop doanh nhân#[br] Mỏng nhẹ & Mạnh mẽ
             a.btn.btn-light.mt-2.tz-mini-banner-btn(href="/products") Xem bộ sưu tập
 
+    //- ===== 8. TIN TỨC & BÀI VIẾT =====
+    if featuredArticles && featuredArticles.length > 0
+      .tz-blog-section.mb-5.mt-5
+        .d-flex.justify-content-between.align-items-start.mb-4
+          div
+            h4.tz-section-title.mb-1 Tin tức & Blog
+            p.text-muted.mb-0 Cập nhật xu hướng công nghệ và hướng dẫn sử dụng mới nhất
+          a.tz-view-all(href="/articles")
+            | Xem tất cả
+            i.fas.fa-arrow-right.ml-2
+
+        .row
+          //- Bài viết lớn bên trái
+          .col-lg-7.col-md-12.mb-4
+            - var mainArticle = featuredArticles[0]
+            if mainArticle
+              .tz-blog-main
+                a.tz-blog-main-link(href=`/articles/${mainArticle.slug}`)
+                  .tz-blog-main-img
+                    img(src=(mainArticle.thumbnail || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=900&auto=format&fit=crop") alt=mainArticle.title)
+                    .tz-blog-main-overlay
+                      if mainArticle.featured
+                        span.tz-blog-badge TIÊU BIỂU
+                      h3.tz-blog-main-title= mainArticle.title
+                      if mainArticle.description
+                        - var cleanDesc = mainArticle.description.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&').replace(/<[^>]*>/g,'').replace(/&nbsp;/g,' ').trim()
+                        - var shortDesc = cleanDesc.length > 150 ? cleanDesc.substring(0, 150) + '...' : cleanDesc
+                        p.tz-blog-main-desc!= shortDesc
+                      span.tz-blog-main-readmore
+                        | Đọc tiếp
+                        i.fas.fa-arrow-right.ml-2
+
+          //- 3 bài viết nhỏ bên phải
+          .col-lg-5.col-md-12
+            - var sideArticles = featuredArticles.slice(1, 4)
+            - var categoryColors = ['#e74c3c', '#2980b9', '#27ae60', '#8e44ad']
+            - var categoryNames = ['ĐÁNH GIÁ', 'THỦ THUẬT', 'PHẦN CỨNG', 'TIN TỨC']
+            each article, idx in sideArticles
+              a.tz-blog-side-item(href=`/articles/${article.slug}`)
+                .tz-blog-side-img
+                  img(src=(article.thumbnail || "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=300&auto=format&fit=crop") alt=article.title)
+                .tz-blog-side-content
+                  span.tz-blog-side-cat(style=`color: ${categoryColors[idx] || '#2980b9'}`)= article.articleCategory ? article.articleCategory.title : categoryNames[idx] || 'TIN TỨC'
+                  h6.tz-blog-side-title= article.title
+                  .tz-blog-side-meta
+                    if article.createdAt
+                      span #{new Date(article.createdAt).toLocaleDateString('vi-VN')}
+                    span · 5 phút đọc

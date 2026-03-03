@@ -1,10 +1,14 @@
 const mongoose = require("mongoose");
+const dns = require("dns");
 
-module.exports.connect = () => {
+// Force Node.js to use Google DNS instead of default resolver
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
+
+module.exports.connect = async () => {
     try {
-        mongoose.connect(process.env.MONGO_URL);
+        await mongoose.connect(process.env.MONGO_URL);
         console.log("Connected to MongoDB");
     } catch (error) {
-        console.log(error);
+        console.log("MongoDB connection error:", error);
     }
 }

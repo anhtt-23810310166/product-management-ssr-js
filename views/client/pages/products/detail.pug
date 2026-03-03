@@ -18,7 +18,10 @@ block main
         .col-lg-5.col-md-6.mb-4.mb-md-0
           .tz-gallery
             .tz-gallery-main.position-relative
-              if product.discountPercentage && product.discountPercentage > 0
+              if flashDiscount && flashDiscount.percentage > 0
+                .badge.badge-danger.position-absolute.tz-badge-discount-lg 
+                  | -#{flashDiscount.percentage}%
+              else if product.discountPercentage && product.discountPercentage > 0
                 .badge.badge-danger.position-absolute.tz-badge-discount-lg 
                   | -#{product.discountPercentage}%
               if product.thumbnail
@@ -39,6 +42,14 @@ block main
         //- Product Info
         .col-lg-7.col-md-6.pl-md-5
           h1.font-weight-bold.mb-3.tz-product-title-lg= product.title
+
+          //- Flash Sale banner
+          if flashDiscount
+            .d-flex.align-items-center.mb-3.p-2.rounded(style="background: linear-gradient(90deg, #ff6b6b, #ee5a24); color: #fff")
+              i.fas.fa-bolt.mr-2
+              strong= flashDiscount.saleTitle
+              .ml-auto(style="font-size: 13px")
+                | Kết thúc: #{new Date(flashDiscount.endTime).toLocaleString('vi-VN')}
           
           .d-flex.align-items-center.mb-4
             .d-flex.text-warning.mr-3.tz-stars-lg
@@ -55,7 +66,18 @@ block main
 
           //- Price
           .p-3.mb-4.tz-price-box
-            if product.discountPercentage && product.discountPercentage > 0
+            if flashDiscount && flashDiscount.percentage > 0
+              - var flashPrice = Math.round(product.price * (1 - flashDiscount.percentage / 100))
+              .d-flex.align-items-end
+                .font-weight-bold.mr-3.tz-price-current-lg= flashPrice.toLocaleString('vi-VN') + '₫'
+                .text-muted.mb-1.tz-price-old-lg= product.price.toLocaleString('vi-VN') + '₫'
+              .mt-1
+                span.badge.font-weight-normal.mr-2(style="background: linear-gradient(90deg, #ff6b6b, #ee5a24); color: #fff; padding: 4px 10px")
+                  i.fas.fa-bolt.mr-1
+                  | Flash Sale -#{flashDiscount.percentage}%
+                span.badge.badge-success.font-weight-normal.tz-badge-saving
+                  | Tiết kiệm: #{(product.price - flashPrice).toLocaleString('vi-VN')}₫
+            else if product.discountPercentage && product.discountPercentage > 0
               - var discountedPrice = Math.round(product.price * (1 - product.discountPercentage / 100))
               .d-flex.align-items-end
                 .font-weight-bold.mr-3.tz-price-current-lg= discountedPrice.toLocaleString('vi-VN') + '₫'

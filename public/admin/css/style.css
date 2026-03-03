@@ -615,11 +615,21 @@ body.admin-page {
   flex-shrink: 0;
 }
 
-.dot-pending { background: #f9a825; }
-.dot-confirmed { background: #1976d2; }
-.dot-shipping { background: #ef6c00; }
-.dot-delivered { background: #2e7d32; }
-.dot-cancelled { background: #c62828; }
+.dot-pending {
+  background: #f9a825;
+}
+.dot-confirmed {
+  background: #1976d2;
+}
+.dot-shipping {
+  background: #ef6c00;
+}
+.dot-delivered {
+  background: #2e7d32;
+}
+.dot-cancelled {
+  background: #c62828;
+}
 
 .order-stat-label {
   flex: 1;
@@ -1696,8 +1706,10 @@ body.admin-page {
 
 .multi-upload-input {
   position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   opacity: 0;
   cursor: pointer;
   z-index: 2;
@@ -1752,11 +1764,13 @@ body.admin-page {
 
 .multi-preview-remove {
   position: absolute;
-  top: 2px; right: 2px;
-  background: rgba(255,255,255,0.9);
+  top: 2px;
+  right: 2px;
+  background: rgba(255, 255, 255, 0.9);
   border: none;
   border-radius: 50%;
-  width: 20px; height: 20px;
+  width: 20px;
+  height: 20px;
   font-size: 14px;
   line-height: 1;
   cursor: pointer;
@@ -1796,11 +1810,13 @@ body.admin-page {
 
 .existing-image-remove {
   position: absolute;
-  top: 4px; right: 4px;
+  top: 4px;
+  right: 4px;
   cursor: pointer;
-  background: rgba(255,255,255,0.85);
+  background: rgba(255, 255, 255, 0.85);
   border-radius: 50%;
-  width: 22px; height: 22px;
+  width: 22px;
+  height: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1824,12 +1840,13 @@ body.admin-page {
 .existing-image-item.marked-for-delete::after {
   content: "XÓA";
   position: absolute;
-  top: 50%; left: 50%;
+  top: 50%;
+  left: 50%;
   transform: translate(-50%, -50%);
   font-size: 0.75rem;
   font-weight: 700;
   color: var(--danger);
-  background: rgba(255,255,255,0.8);
+  background: rgba(255, 255, 255, 0.8);
   padding: 2px 8px;
   border-radius: 4px;
 }
@@ -3042,6 +3059,22 @@ body.admin-page {
   background: #fff3e0;
   color: #f57c00;
 }
+.module-brands {
+  background: #e0f7fa;
+  color: #00838f;
+}
+.module-flash-sale {
+  background: #fce4ec;
+  color: #e53935;
+}
+.module-articles {
+  background: #e8eaf6;
+  color: #3949ab;
+}
+.module-article-category {
+  background: #fff8e1;
+  color: #f9a825;
+}
 .module-accounts {
   background: #e8f5e9;
   color: #43a047;
@@ -3049,6 +3082,26 @@ body.admin-page {
 .module-roles {
   background: #f3e5f5;
   color: #8e24aa;
+}
+.module-orders {
+  background: #fff3e0;
+  color: #ef6c00;
+}
+.module-users {
+  background: #e0f2f1;
+  color: #00897b;
+}
+.module-settings {
+  background: #eceff1;
+  color: #546e7a;
+}
+.module-chat {
+  background: #e1f5fe;
+  color: #0288d1;
+}
+.module-reviews {
+  background: #fffde7;
+  color: #f9a825;
 }
 .module-auth {
   background: #fce4ec;

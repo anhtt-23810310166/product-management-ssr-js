@@ -9,6 +9,7 @@ const whitelist = require("../../middlewares/whitelist.middleware");
 const articleFields = ["title", "description", "article_category_id", "status", "position", "thumbnail"];
 
 router.get("/", controller.index);
+router.get("/detail/:id", controller.detail);
 router.get("/create", auth.requirePermission("articles_create"), controller.create);
 router.post("/create", auth.requirePermission("articles_create"), upload.single("thumbnail"), whitelist(articleFields), validate.createPost, controller.createPost);
 router.get("/edit/:id", auth.requirePermission("articles_edit"), controller.edit);

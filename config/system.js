@@ -38,6 +38,18 @@ const systemConfig = (app) => {
             ]
         },
         {
+            label: "Flash Sale",
+            name: "flash-sale",
+            permissions: [
+                { label: "Xem", action: "view" },
+                { label: "Thêm mới", action: "create" },
+                { label: "Chỉnh sửa", action: "edit" },
+                { label: "Xóa", action: "delete" },
+                { label: "Đổi trạng thái", action: "change-status" }
+            ]
+        },
+
+        {
             label: "Bài viết",
             name: "articles",
             permissions: [

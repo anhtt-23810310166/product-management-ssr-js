@@ -1,0 +1,74 @@
+extends ../../layouts/default.pug
+include ../../mixins/page-header.pug
+
+block main
+  +pageHeader("Chi tiết danh mục", category.title)
+
+  .row
+    .col-lg-8
+      .admin-form-card.mb-4
+        if category.thumbnail
+          .mb-4
+            img(src=category.thumbnail alt=category.title style="width: 100%; max-height: 300px; object-fit: cover; border-radius: 6px")
+
+        h3.mb-3(style="font-weight: 700; color: var(--text-primary)")= category.title
+
+        .d-flex.flex-wrap.mb-4(style="gap: 10px")
+          span.category-tag
+            i.far.fa-clock.mr-1
+            = category.createdAt ? category.createdAt.toLocaleDateString('vi-VN') : '--'
+          span.category-tag
+            = category.status === 'active' ? 'Hoạt động' : 'Dừng'
+          if parentName
+            span.category-tag
+              i.fas.fa-sitemap.mr-1
+              | Danh mục cha: #{parentName}
+          if category.position
+            span.category-tag
+              i.fas.fa-sort.mr-1
+              | Vị trí: #{category.position}
+
+        if category.description
+          hr.mb-4
+          .content-html(style="font-size: 0.9rem; line-height: 1.75; color: var(--text-secondary)")
+            != category.description
+
+    .col-lg-4
+      .admin-form-card.mb-4
+        h6.form-label.mb-3
+          i.fas.fa-chart-bar.mr-2
+          | Thống kê
+        .mb-3
+          .text-muted.mb-1(style="font-size: 0.78rem") Số bài viết
+          div(style="font-size: 1.2rem; font-weight: 700; color: var(--accent)")= articleCount
+        .mb-3
+          .text-muted.mb-1(style="font-size: 0.78rem") Slug
+          .text-break(style="font-size: 0.85rem; font-weight: 500; color: var(--text-primary)")= category.slug
+
+      if childCategories && childCategories.length > 0
+        .admin-form-card.mb-4
+          h6.form-label.mb-3
+            i.fas.fa-sitemap.mr-2
+            | Danh mục con (#{childCategories.length})
+          each child in childCategories
+            .d-flex.align-items-center.py-2(style="border-bottom: 1px solid var(--border-color)")
+              if child.thumbnail
+                img.mr-2(src=child.thumbnail style="width: 32px; height: 32px; object-fit: cover; border-radius: 4px")
+              else
+                .mr-2.d-flex.align-items-center.justify-content-center(style="width: 32px; height: 32px; background: var(--content-bg); border-radius: 4px")
+                  i.fas.fa-folder(style="font-size: 0.7rem; color: var(--text-muted)")
+              a(href=`${prefixAdmin}/article-category/detail/${child._id}` style="font-size: 0.85rem; font-weight: 500; color: var(--text-primary); text-decoration: none")= child.title
+              .ml-auto
+                span.category-tag(style="font-size: 0.7rem")= child.status === 'active' ? 'Hoạt động' : 'Dừng'
+
+      .admin-form-card
+        h6.form-label.mb-3
+          i.fas.fa-cog.mr-2
+          | Hành động
+        .d-flex.flex-column(style="gap: 8px")
+          a.btn-submit.text-center(href=`${prefixAdmin}/article-category/edit/${category._id}`)
+            i.fas.fa-edit.mr-1
+            | Chỉnh sửa
+          a.btn-cancel.text-center(href=`${prefixAdmin}/article-category`)
+            i.fas.fa-arrow-left.mr-1
+            | Quay lại danh sách

@@ -1,6 +1,7 @@
 const Product = require("../../models/product.model");
 const Order = require("../../models/order.model");
 const Cart = require("../../models/cart.model");
+const FlashSale = require("../../models/flash-sale.model");
 const {
     getDiscountedPrice,
     getCartTotalQuantity,
@@ -81,10 +82,45 @@ module.exports.addPost = async (req, res) => {
 
         const cart = req.cart;
 
+        // Check if item exceeds standard stock or flash sale limit
+        let maxStock = product.stock;
+        
+        // Find if this product has an active flash sale (to check flash stock logic)
+        const FlashSale = require("../../models/flash-sale.model");
+        const now = new Date();
+        const activeFlashSale = await FlashSale.findOne({
+            status: "active", deleted: false,
+            startTime: { $lte: now }, endTime: { $gte: now },
+            "products.product_id": product._id
+        });
+
+        if (activeFlashSale) {
+            const fp = activeFlashSale.products.find(p => p.product_id.toString() === productId);
+            if (fp && fp.sold < fp.stock) {
+                // If there's an active flash sale, we want to restrict to remaining flash stock
+                const remainingFlashStock = fp.stock - (fp.sold || 0);
+                if (remainingFlashStock < maxStock) {
+                    maxStock = remainingFlashStock;
+                }
+            } else if (fp && fp.sold >= fp.stock) {
+                // Flash sale stock ended. Standard rules apply
+                maxStock = product.stock;
+            }
+        }
+
         // Kiểm tra sản phẩm đã có trong giỏ chưa
         const existingItem = cart.items.find(
             item => item.productId === productId
         );
+
+        const currentQuantity = existingItem ? existingItem.quantity : 0;
+        const newTotalQuantity = currentQuantity + quantity;
+
+        if (newTotalQuantity > maxStock) {
+            if (isAjax) return res.json({ success: false, message: `Số lượng vượt quá giới hạn (có sẵn: ${maxStock})`});
+            req.flash("error", `Không thể thêm! Khả dụng: ${maxStock} sản phẩm`);
+            return res.redirect("back");
+        }
 
         if (existingItem) {
             // Đã có -> cộng thêm số lượng
@@ -133,9 +169,44 @@ module.exports.update = async (req, res) => {
             return res.json({ success: false, message: "Số lượng không hợp lệ" });
         }
 
-        const cart = req.cart;
+        // Kiểm tra sản phẩm tồn tại
+        const targetProduct = await Product.findOne({
+            _id: productId,
+            status: "active",
+            deleted: false
+        });
 
-        const existingItem = cart.items.find(
+        if (!targetProduct) {
+            return res.json({ success: false, message: "Sản phẩm không tồn tại" });
+        }
+
+        let maxStock = targetProduct.stock;
+
+        // Find if this product has an active flash sale
+        const FlashSale = require("../../models/flash-sale.model");
+        const now = new Date();
+        const activeFlashSale = await FlashSale.findOne({
+            status: "active", deleted: false,
+            startTime: { $lte: now }, endTime: { $gte: now },
+            "products.product_id": productId
+        });
+
+        if (activeFlashSale) {
+            const fp = activeFlashSale.products.find(p => p.product_id.toString() === productId);
+            if (fp && fp.sold < fp.stock) {
+                const remainingFlashStock = fp.stock - (fp.sold || 0);
+                if (remainingFlashStock < maxStock) {
+                    maxStock = remainingFlashStock;
+                }
+            }
+        }
+
+        if (quantity > maxStock) {
+            return res.json({ success: false, message: `Chỉ còn ${maxStock} sản phẩm khả dụng`});
+        }
+
+        const currentCart = await Cart.findById(cart._id);
+        const existingItem = currentCart.items.find(
             item => item.productId === productId
         );
 
@@ -285,6 +356,21 @@ module.exports.checkoutPost = async (req, res) => {
                 await Product.updateOne(
                     { _id: product._id },
                     { $inc: { stock: -cartItem.quantity } }
+                );
+
+                // Cập nhật Flash Sale sold nếu sản phẩm nằm trong Flash Sale đang diễn ra
+                const now = new Date();
+                await FlashSale.updateOne(
+                    {
+                        status: "active",
+                        deleted: false,
+                        startTime: { $lte: now },
+                        endTime: { $gte: now },
+                        "products.product_id": product._id
+                    },
+                    {
+                        $inc: { "products.$.sold": cartItem.quantity }
+                    }
                 );
             }
         }

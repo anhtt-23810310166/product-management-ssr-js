@@ -3,6 +3,7 @@ const ProductCategory = require("../../models/product-category.model");
 const Brand = require("../../models/brand.model");
 const Review = require("../../models/review.model");
 const Order = require("../../models/order.model");
+const FlashSale = require("../../models/flash-sale.model");
 
 // Helper: lấy tất cả ID con cháu của 1 category
 const getDescendantIds = async (parentId) => {
@@ -24,7 +25,8 @@ module.exports.index = async (req, res) => {
     try {
         const find = {
             status: "active",
-            deleted: false
+            deleted: false,
+            stock: { $gt: 0 }
         };
 
         let currentCategory = null;
@@ -138,6 +140,32 @@ module.exports.detail = async (req, res) => {
             });
         }
 
+        // Kiểm tra Flash Sale đang diễn ra cho sản phẩm này
+        let flashDiscount = null;
+        const now = new Date();
+        const activeFlashSale = await FlashSale.findOne({
+            status: "active",
+            deleted: false,
+            startTime: { $lte: now },
+            endTime: { $gte: now },
+            "products.product_id": product._id
+        });
+
+        if (activeFlashSale) {
+            const flashProduct = activeFlashSale.products.find(
+                p => p.product_id.toString() === product._id.toString()
+            );
+            if (flashProduct && flashProduct.sold < flashProduct.stock) {
+                flashDiscount = {
+                    percentage: flashProduct.discountPercentage,
+                    saleTitle: activeFlashSale.title,
+                    endTime: activeFlashSale.endTime,
+                    stock: flashProduct.stock,
+                    sold: flashProduct.sold || 0
+                };
+            }
+        }
+
         // Lấy danh sách đánh giá
         const reviews = await Review.find({
             productId: product._id.toString(),
@@ -202,7 +230,8 @@ module.exports.detail = async (req, res) => {
             reviewCount: reviews.length,
             canReview: canReview,
             hasReviewed: hasReviewed,
-            soldCount: soldCount
+            soldCount: soldCount,
+            flashDiscount: flashDiscount
         });
     } catch (error) {
         res.redirect("/products");

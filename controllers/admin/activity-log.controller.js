@@ -44,12 +44,18 @@ module.exports.index = async (req, res) => {
 
         const moduleLabels = {
             "products": "Sản phẩm",
-            "product-category": "Danh mục sản phẩm",
+            "product-category": "Danh mục SP",
             "brands": "Thương hiệu",
+            "flash-sale": "Flash Sale",
             "articles": "Bài viết",
-            "article-category": "Danh mục bài viết",
+            "article-category": "Danh mục BV",
             "accounts": "Tài khoản",
             "roles": "Nhóm quyền",
+            "orders": "Đơn hàng",
+            "users": "Khách hàng",
+            "settings": "Cài đặt",
+            "chat": "CSKH",
+            "reviews": "Đánh giá",
             "auth": "Xác thực"
         };
 

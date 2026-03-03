@@ -276,3 +276,40 @@ function changeGalleryImage(thumbEl, imgSrc) {
   allThumbs.forEach(function (t) { t.classList.remove("active"); });
   thumbEl.classList.add("active");
 }
+
+// ===== Flash Sale Countdown Timer =====
+document.addEventListener("DOMContentLoaded", function () {
+  var flashSaleSection = document.getElementById("flashSaleSection");
+  if (!flashSaleSection) return;
+
+  var endTimeStr = flashSaleSection.getAttribute("data-end-time");
+  if (!endTimeStr) return;
+
+  var endTime = new Date(endTimeStr).getTime();
+
+  var cdHours = document.getElementById("cd-hours");
+  var cdMinutes = document.getElementById("cd-minutes");
+  var cdSeconds = document.getElementById("cd-seconds");
+
+  function updateCountdown() {
+    var now = new Date().getTime();
+    var distance = endTime - now;
+
+    if (distance <= 0) {
+      // Flash Sale ended
+      flashSaleSection.style.display = "none";
+      return;
+    }
+
+    var hours = Math.floor(distance / (1000 * 60 * 60));
+    var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+    if (cdHours) cdHours.textContent = hours < 10 ? "0" + hours : hours;
+    if (cdMinutes) cdMinutes.textContent = minutes < 10 ? "0" + minutes : minutes;
+    if (cdSeconds) cdSeconds.textContent = seconds < 10 ? "0" + seconds : seconds;
+  }
+
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
+});

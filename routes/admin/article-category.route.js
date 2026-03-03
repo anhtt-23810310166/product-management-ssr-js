@@ -5,6 +5,7 @@ const upload = require("../../helpers/upload");
 const auth = require("../../middlewares/admin/auth.middleware");
 
 router.get("/", controller.index);
+router.get("/detail/:id", controller.detail);
 router.get("/create", auth.requirePermission("article-category_create"), controller.create);
 router.post("/create", auth.requirePermission("article-category_create"), upload.single("thumbnail"), controller.createPost);
 router.get("/edit/:id", auth.requirePermission("article-category_edit"), controller.edit);

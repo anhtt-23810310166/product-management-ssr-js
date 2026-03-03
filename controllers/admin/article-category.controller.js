@@ -48,6 +48,55 @@ module.exports.index = async (req, res) => {
     }
 };
 
+// [GET] /admin/article-category/detail/:id
+module.exports.detail = async (req, res) => {
+    try {
+        const category = await ArticleCategory.findOne({ _id: req.params.id, deleted: false });
+        if (!category) {
+            req.flash("error", "Danh mục không tồn tại!");
+            return res.redirect(`${prefixAdmin}/article-category`);
+        }
+
+        // Lấy tên danh mục cha
+        let parentName = "";
+        if (category.parent_id) {
+            const parent = await ArticleCategory.findById(category.parent_id);
+            if (parent) parentName = parent.title;
+        }
+
+        // Đếm số bài viết trong danh mục
+        const Article = require("../../models/article.model");
+        const articleCount = await Article.countDocuments({
+            article_category_id: category._id.toString(),
+            deleted: false
+        });
+
+        // Lấy danh mục con
+        const childCategories = await ArticleCategory.find({
+            parent_id: category._id.toString(),
+            deleted: false
+        }).sort({ position: "asc" });
+
+        res.render("admin/pages/article-category/detail", {
+            pageTitle: category.title,
+            currentPage: "article-category",
+            breadcrumbs: [
+                { title: "Bài viết" },
+                { title: "Danh mục", link: `${prefixAdmin}/article-category` },
+                { title: "Chi tiết" }
+            ],
+            category: category,
+            parentName: parentName,
+            articleCount: articleCount,
+            childCategories: childCategories
+        });
+    } catch (error) {
+        console.log(error);
+        req.flash("error", "Có lỗi xảy ra!");
+        res.redirect(`${prefixAdmin}/article-category`);
+    }
+};
+
 // [GET] /admin/article-category/create
 module.exports.create = async (req, res) => {
     try {
