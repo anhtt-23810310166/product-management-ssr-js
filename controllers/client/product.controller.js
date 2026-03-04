@@ -75,6 +75,26 @@ module.exports.index = async (req, res) => {
             find.title = keywordRegex;
         }
 
+        // Lọc theo khoảng giá
+        const priceMin = req.query.priceMin ? parseInt(req.query.priceMin) : null;
+        const priceMax = req.query.priceMax ? parseInt(req.query.priceMax) : null;
+        if (priceMin || priceMax) {
+            find.price = {};
+            if (priceMin) find.price.$gte = priceMin;
+            if (priceMax) find.price.$lte = priceMax;
+        }
+
+        // Sắp xếp
+        const sortBy = req.query.sortBy || "position";
+        let sortOption = { position: "desc" };
+        switch (sortBy) {
+            case "price-asc": sortOption = { price: 1 }; break;
+            case "price-desc": sortOption = { price: -1 }; break;
+            case "newest": sortOption = { createdAt: -1 }; break;
+            case "oldest": sortOption = { createdAt: 1 }; break;
+            default: sortOption = { position: "desc" };
+        }
+
         // Lấy tất cả thương hiệu cho sidebar
         const allBrands = await Brand.find({
             status: "active",
@@ -82,7 +102,7 @@ module.exports.index = async (req, res) => {
         }).sort({ position: "asc" });
 
         const products = await Product.find(find)
-            .sort({ position: "desc" });
+            .sort(sortOption);
 
         res.render("client/pages/products/index", {
             title: keyword ? `Tìm kiếm: ${keyword}` : (currentCategory ? currentCategory.title : "Sản phẩm"),
@@ -90,7 +110,10 @@ module.exports.index = async (req, res) => {
             currentCategory,
             keyword,
             brands: allBrands,
-            selectedBrands
+            selectedBrands,
+            priceMin: priceMin || "",
+            priceMax: priceMax || "",
+            sortBy
         });
     } catch (error) {
         console.log(error);

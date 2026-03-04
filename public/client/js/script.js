@@ -501,3 +501,13 @@ function toggleWishlist(btn) {
     window.location.href = "/user/login";
   });
 }
+
+// ===== Price Range Quick Filter =====
+function setPriceRange(min, max) {
+  var minInput = document.querySelector('input[name="priceMin"]');
+  var maxInput = document.querySelector('input[name="priceMax"]');
+  if (minInput) minInput.value = min || "";
+  if (maxInput) maxInput.value = max || "";
+  var form = document.getElementById("filter-form");
+  if (form) form.submit();
+}
