@@ -9,6 +9,7 @@ const {
 } = require("../../helpers/product");
 const vnpayHelper = require("../../helpers/vnpay");
 const discountService = require("../../services/discount.service");
+const { calculateShippingFee, getProvinceList } = require("../../helpers/shipping");
 
 // Helper: Lấy cartItems và cartTotal từ Cart document
 const getCartDetails = async (cart) => {
@@ -527,4 +528,20 @@ module.exports.vnpayReturn = async (req, res) => {
         req.flash("error", "Có lỗi xảy ra khi xác nhận thanh toán!");
         res.redirect("/");
     }
+};
+
+// [GET] /cart/shipping/fee?province=Hà Nội
+module.exports.getShippingFee = (req, res) => {
+    const province = req.query.province || "";
+    const result = calculateShippingFee(province);
+    res.json({
+        code: 200,
+        ...result,
+        feeFormatted: result.fee.toLocaleString("vi-VN") + "đ"
+    });
+};
+
+// [GET] /cart/provinces  - trả về danh sách tỉnh cho autocomplete
+module.exports.getProvinces = (req, res) => {
+    res.json({ code: 200, provinces: getProvinceList() });
 };

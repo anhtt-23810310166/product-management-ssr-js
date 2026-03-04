@@ -115,6 +115,15 @@ block main
                       span.text-muted(class="tz-auto-766745") Số lượng: x#{item.quantity}
                       span.font-weight-bold(class="tz-auto-267f6d")= item.itemTotal.toLocaleString() + ' ₫'
 
+            //- Phí vận chuyển (tự tính từ địa chỉ nhận hàng)
+            .mb-3.pb-3.border-bottom
+              .d-flex.justify-content-between.align-items-center
+                span.text-muted
+                  i.fas.fa-truck.mr-1
+                  | Phí vận chuyển:
+                span.font-weight-bold.text-primary#shippingFeeText Đang tính...
+              input(type="hidden" name="shippingFee" id="shippingFeeHidden" value="0")
+
             //- Mã giảm giá
             .mb-3.pb-3.border-bottom
               label.font-weight-bold.mb-2
@@ -136,6 +145,48 @@ block main
 
   script.
     var originalTotal = #{cartTotal};
+    var shippingFee = 0;
+
+    // === Tự tính phí ship từ địa chỉ nhận hàng ===
+    function calcShippingFromAddress(addressStr) {
+      if (!addressStr) return;
+      fetch('/cart/shipping/fee?province=' + encodeURIComponent(addressStr))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.code === 200) {
+            shippingFee = data.fee;
+            document.getElementById('shippingFeeText').textContent = data.feeFormatted + ' (' + data.regionLabel + ')';
+            document.getElementById('shippingFeeHidden').value = data.fee;
+            updateFinalTotal();
+          }
+        });
+    }
+
+    function updateFinalTotal() {
+      var discountEl = document.getElementById('discountAmountText');
+      var discountAmount = 0;
+      if (discountEl && discountEl.textContent) {
+        discountAmount = parseInt(discountEl.textContent.replace(/[^0-9]/g, '')) || 0;
+      }
+      var total = originalTotal + shippingFee - discountAmount;
+      if (total < 0) total = 0;
+      document.getElementById('finalTotalText').textContent = total.toLocaleString('vi-VN') + ' ₫';
+    }
+
+    // Nếu đã có địa chỉ mặc định (User đã đăng nhập) -> tính ngay khi load
+    var savedAddress = document.querySelector('input[name="customerAddress"]');
+    if (savedAddress && savedAddress.value) {
+      calcShippingFromAddress(savedAddress.value);
+    } else {
+      // Khách vãng lai: tính khi nhập xong địa chỉ
+      var addrTextarea = document.getElementById('customerAddress');
+      if (addrTextarea) {
+        addrTextarea.addEventListener('blur', function() {
+          if (this.value.trim()) calcShippingFromAddress(this.value.trim());
+        });
+      }
+    }
+
     var applyBtn = document.getElementById("applyDiscountBtn");
     if (applyBtn) {
       applyBtn.addEventListener("click", function() {

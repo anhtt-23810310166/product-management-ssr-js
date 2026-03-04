@@ -9,10 +9,12 @@ router.post("/add/:productId", controller.addPost);
 router.patch("/update/:productId", controller.update);
 router.delete("/remove/:productId", controller.remove);
 
-// Áp dụng mã giảm giá
-router.post("/apply-discount", controller.applyDiscount);
+// Tính phí ship theo tỉnh/thành
+router.get("/shipping/fee", controller.getShippingFee);
+router.get("/provinces", controller.getProvinces);
 
 // VNPay return callback
 router.get("/vnpay-return", controller.vnpayReturn);
 
 module.exports = router;
+
