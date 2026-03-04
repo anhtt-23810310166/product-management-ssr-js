@@ -237,3 +237,42 @@ module.exports.detail = async (req, res) => {
         res.redirect("/products");
     }
 }
+
+// [GET] /products/suggest?keyword=...
+module.exports.suggest = async (req, res) => {
+    try {
+        const keyword = (req.query.keyword || "").trim();
+        if (!keyword || keyword.length < 1) {
+            return res.json([]);
+        }
+
+        const regex = new RegExp(keyword, "i");
+        const products = await Product.find({
+            title: regex,
+            status: "active",
+            deleted: false,
+            stock: { $gt: 0 }
+        })
+        .select("title slug thumbnail price discountPercentage")
+        .limit(8)
+        .lean();
+
+        const results = products.map(p => {
+            const priceNew = p.discountPercentage
+                ? Math.round(p.price * (1 - p.discountPercentage / 100))
+                : p.price;
+            return {
+                title: p.title,
+                slug: p.slug,
+                thumbnail: p.thumbnail || "",
+                price: p.price,
+                priceNew: priceNew,
+                discount: p.discountPercentage || 0
+            };
+        });
+
+        res.json(results);
+    } catch (error) {
+        res.json([]);
+    }
+}

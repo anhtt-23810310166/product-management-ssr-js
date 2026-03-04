@@ -391,3 +391,77 @@ function stopVoiceSearch() {
   var overlay = document.getElementById("voiceOverlay");
   if (overlay) overlay.classList.remove("active");
 }
+
+// ===== Autocomplete Search Suggest =====
+(function() {
+  var searchInput = document.getElementById("desktopSearchInput");
+  var dropdown = document.getElementById("suggestDropdown");
+  if (!searchInput || !dropdown) return;
+
+  var debounceTimer = null;
+
+  function formatPrice(num) {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + "đ";
+  }
+
+  searchInput.addEventListener("input", function() {
+    var keyword = this.value.trim();
+    clearTimeout(debounceTimer);
+
+    if (keyword.length < 2) {
+      dropdown.classList.remove("show");
+      dropdown.innerHTML = "";
+      return;
+    }
+
+    debounceTimer = setTimeout(function() {
+      fetch("/products/suggest?keyword=" + encodeURIComponent(keyword))
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          if (!data || data.length === 0) {
+            dropdown.innerHTML = '<div class="tz-suggest-empty">Không tìm thấy sản phẩm nào</div>';
+            dropdown.classList.add("show");
+            return;
+          }
+
+          var html = "";
+          data.forEach(function(item) {
+            var priceHtml = "";
+            if (item.discount > 0) {
+              priceHtml = '<span class="tz-suggest-price">' + formatPrice(item.priceNew) + '<span class="old-price">' + formatPrice(item.price) + '</span></span>';
+            } else {
+              priceHtml = '<span class="tz-suggest-price">' + formatPrice(item.price) + '</span>';
+            }
+
+            html += '<a class="tz-suggest-item" href="/products/detail/' + item.slug + '">' +
+              '<img src="' + (item.thumbnail || '/client/images/placeholder.png') + '" alt="">' +
+              '<div class="tz-suggest-info">' +
+                '<div class="tz-suggest-title">' + item.title + '</div>' +
+                priceHtml +
+              '</div>' +
+            '</a>';
+          });
+
+          dropdown.innerHTML = html;
+          dropdown.classList.add("show");
+        })
+        .catch(function() {
+          dropdown.classList.remove("show");
+        });
+    }, 300);
+  });
+
+  // Hide dropdown on blur (with delay for click)
+  searchInput.addEventListener("blur", function() {
+    setTimeout(function() {
+      dropdown.classList.remove("show");
+    }, 200);
+  });
+
+  // Show dropdown on focus if has content
+  searchInput.addEventListener("focus", function() {
+    if (dropdown.innerHTML.trim() && this.value.trim().length >= 2) {
+      dropdown.classList.add("show");
+    }
+  });
+})();
