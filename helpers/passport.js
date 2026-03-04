@@ -11,7 +11,7 @@ const generateHelper = require("./generate");
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "/user/auth/google/callback"
+    callbackURL: (process.env.BASE_URL || "") + "/user/auth/google/callback"
 }, async (accessToken, refreshToken, profile, done) => {
     try {
         // Tìm user theo googleId
@@ -56,7 +56,7 @@ passport.use(new GoogleStrategy({
 passport.use(new FacebookStrategy({
     clientID: process.env.FACEBOOK_APP_ID,
     clientSecret: process.env.FACEBOOK_APP_SECRET,
-    callbackURL: "/user/auth/facebook/callback",
+    callbackURL: (process.env.BASE_URL || "") + "/user/auth/facebook/callback",
     profileFields: ["id", "displayName", "email", "photos"]
 }, async (accessToken, refreshToken, profile, done) => {
     try {

@@ -4347,6 +4347,7 @@ a.btn-outline-primary.active {
   height: 100%;
   border-radius: var(--tz-radius);
   overflow: hidden;
+  margin-bottom: 28px;
 }
 
 .tz-blog-main-link {
@@ -4453,7 +4454,7 @@ a.btn-outline-primary.active {
 .tz-blog-side-item {
   display: flex;
   gap: 16px;
-  padding: 16px 0;
+  padding: 18px 0;
   border-top: 1px solid var(--tz-border);
   text-decoration: none;
   color: inherit;
