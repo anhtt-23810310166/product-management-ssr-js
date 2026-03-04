@@ -465,3 +465,39 @@ function stopVoiceSearch() {
     }
   });
 })();
+
+// ===== Wishlist Toggle =====
+function toggleWishlist(btn) {
+  var productId = btn.getAttribute("data-product-id");
+  if (!productId) return;
+
+  fetch("/wishlist/toggle", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ productId: productId })
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data.code === 401) {
+      window.location.href = "/user/login";
+      return;
+    }
+    if (data.code === 200) {
+      var icon = btn.querySelector("i");
+      if (data.action === "added") {
+        btn.classList.add("active");
+        icon.className = "fas fa-heart";
+      } else {
+        btn.classList.remove("active");
+        icon.className = "far fa-heart";
+      }
+      // Show toast if available
+      if (typeof showToast === "function") {
+        showToast(data.message, "success");
+      }
+    }
+  })
+  .catch(function() {
+    window.location.href = "/user/login";
+  });
+}

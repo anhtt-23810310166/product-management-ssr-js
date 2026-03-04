@@ -15,6 +15,17 @@ mixin productCard(product)
       a(href=`/products/detail/${product.slug}`)
         img.card-img-top.p-3(src=(product.thumbnail || "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=600&auto=format&fit=crop") class="tz-auto-9bddc1")
       
+      //- Nút yêu thích
+      - const isWished = (typeof clientWishlist !== 'undefined' && clientWishlist && clientWishlist.includes(product._id.toString()))
+      button.tz-wishlist-btn(
+        type="button"
+        title="Yêu thích"
+        class=isWished ? "active" : ""
+        data-product-id=product._id
+        onclick="toggleWishlist(this)"
+      )
+        i(class=isWished ? "fas fa-heart" : "far fa-heart")
+
       if product.stock > 0
         form.tz-cart-form(action=`/cart/add/${product._id}` method="POST")
           input(type="hidden" name="quantity" value="1")

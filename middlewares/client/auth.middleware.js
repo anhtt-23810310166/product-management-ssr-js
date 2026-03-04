@@ -18,6 +18,7 @@ module.exports.authMiddleware = async (req, res, next) => {
 
             if (user) {
                 res.locals.clientUser = user;
+                res.locals.clientWishlist = user.wishlist || [];
             } else {
                 // Token không hợp lệ → xóa session
                 req.session.userToken = null;
