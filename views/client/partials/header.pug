@@ -5,8 +5,10 @@ header.tz-header.sticky-top.bg-white.shadow-sm
   .tz-header-top.border-bottom
     .container
       .row.align-items-center.py-3
-        //- Cột Logo
-        .col-lg-3.col-md-4.col-6
+        //- Cột Logo (với hamburger trên mobile)
+        .col-lg-3.col-md-4.col-6.d-flex.align-items-center
+          button.tz-mobile-menu-btn.d-lg-none(type="button" onclick="document.querySelector('.tz-header-nav').classList.toggle('d-none'); document.querySelector('.tz-header-nav').classList.toggle('d-block');")
+            i.fas.fa-bars
           a.tz-logo.d-flex.align-items-center.text-decoration-none(href="/")
             i.fas.fa-bolt.text-primary.mr-2.tz-logo-icon
             span.font-weight-bold.text-dark.tz-logo-text TechZone

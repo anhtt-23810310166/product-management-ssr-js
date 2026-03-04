@@ -3438,3 +3438,306 @@ body.admin-page {
   color: var(--text-primary);
   text-decoration: none;
 }
+
+/* ================================================================
+   ADMIN RESPONSIVE STYLES
+   ================================================================ */
+
+/* ===== TABLET & BELOW: max-width 991.98px ===== */
+@media (max-width: 991.98px) {
+
+  /* Sidebar: slide off-screen by default */
+  .admin-sider {
+    transform: translateX(-100%);
+  }
+
+  /* Sidebar visible when body has class */
+  .admin-sider.open {
+    transform: translateX(0);
+  }
+
+  /* Overlay */
+  .admin-sider-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1035;
+  }
+
+  .admin-sider-overlay.active {
+    display: block;
+  }
+
+  /* Content wrapper: full width */
+  .admin-content-wrapper {
+    margin-left: 0;
+  }
+
+  /* Show sidebar toggle button */
+  .sider-toggle-btn {
+    display: flex;
+  }
+
+  /* Header */
+  .admin-header {
+    padding: 0 16px;
+  }
+
+  /* Admin main content */
+  .admin-main {
+    padding: 16px;
+  }
+
+  /* Dashboard stat cards: 2 columns */
+  .stat-card {
+    padding: 16px;
+  }
+
+  /* Page title */
+  .admin-page-title {
+    font-size: 1.2rem;
+  }
+
+  /* Tables */
+  .admin-table-wrapper,
+  .table-responsive,
+  .card-body .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .admin-table-wrapper table,
+  .table {
+    min-width: 600px;
+  }
+
+  /* User dropdown */
+  .admin-user-name {
+    display: none;
+  }
+  .admin-user-arrow {
+    display: none;
+  }
+
+  /* Chat admin */
+  .chat-admin-container .row {
+    flex-direction: column;
+  }
+  .chat-admin-sidebar {
+    margin-bottom: 16px;
+  }
+
+  /* Breadcrumb */
+  .admin-breadcrumb {
+    font-size: 0.75rem;
+  }
+  .breadcrumb-link {
+    display: none;
+  }
+  .breadcrumb-sep:first-of-type {
+    display: none;
+  }
+}
+
+/* ===== MOBILE: max-width 767.98px ===== */
+@media (max-width: 767.98px) {
+
+  /* Admin main */
+  .admin-main {
+    padding: 12px;
+  }
+
+  /* Stat cards */
+  .stat-card {
+    padding: 14px;
+    margin-bottom: 12px;
+  }
+  .stat-card .stat-value {
+    font-size: 1.3rem;
+  }
+  .stat-card .stat-label {
+    font-size: 0.7rem;
+  }
+  .stat-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  /* Page header */
+  .admin-page-header {
+    margin-bottom: 16px;
+  }
+  .admin-page-title {
+    font-size: 1.1rem;
+  }
+  .admin-page-subtitle {
+    font-size: 0.75rem;
+  }
+
+  /* Action buttons in page header */
+  .admin-page-header .d-flex {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .admin-page-header .btn {
+    font-size: 0.75rem;
+    padding: 6px 12px;
+  }
+
+  /* Cards */
+  .card {
+    border-radius: 4px;
+  }
+  .card-body {
+    padding: 12px;
+  }
+  .card-header {
+    padding: 10px 12px;
+  }
+
+  /* Tables */
+  .table th,
+  .table td {
+    font-size: 0.75rem;
+    padding: 8px 10px;
+    white-space: nowrap;
+  }
+  .table img {
+    width: 36px;
+    height: 36px;
+  }
+
+  /* Forms */
+  .form-group label {
+    font-size: 0.78rem;
+  }
+  .form-control {
+    font-size: 0.8rem;
+    padding: 6px 10px;
+  }
+
+  /* Buttons */
+  .btn {
+    font-size: 0.78rem;
+    padding: 6px 14px;
+  }
+
+  /* Pagination */
+  .pagination .page-link {
+    padding: 4px 10px;
+    font-size: 0.75rem;
+  }
+
+  /* Product create/edit form - image upload */
+  .image-preview-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  /* Order detail */
+  .order-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Admin header right icons */
+  .admin-header-right .btn-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 0.85rem;
+  }
+
+  /* Chat admin */
+  .chat-msgs-wrapper {
+    max-height: 300px;
+  }
+}
+
+/* ===== SMALL MOBILE: max-width 575.98px ===== */
+@media (max-width: 575.98px) {
+
+  /* Admin main */
+  .admin-main {
+    padding: 8px;
+  }
+
+  /* Header */
+  .admin-header {
+    padding: 0 10px;
+    height: 50px;
+  }
+
+  /* Sidebar brand */
+  .admin-sider-brand span {
+    font-size: 0.95rem;
+  }
+
+  /* Stat cards */
+  .stat-card {
+    padding: 12px;
+  }
+  .stat-card .stat-value {
+    font-size: 1.1rem;
+  }
+
+  /* Page title */
+  .admin-page-title {
+    font-size: 1rem;
+  }
+
+  /* Tables */
+  .table th,
+  .table td {
+    font-size: 0.7rem;
+    padding: 6px 8px;
+  }
+  .table img {
+    width: 30px;
+    height: 30px;
+  }
+
+  /* Forms */
+  .form-control {
+    font-size: 0.75rem;
+  }
+
+  /* Cards */
+  .card-body {
+    padding: 10px;
+  }
+
+  /* Flash sale form */
+  .flash-sale-dates {
+    flex-direction: column;
+  }
+
+  /* Buttons */
+  .btn-sm {
+    font-size: 0.7rem;
+    padding: 4px 8px;
+  }
+
+  /* Action buttons */
+  .action-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .action-btns .btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Breadcrumb hide completely */
+  .admin-breadcrumb {
+    display: none;
+  }
+
+  /* Footer */
+  .admin-footer {
+    padding: 12px 8px;
+    font-size: 0.7rem;
+  }
+}
