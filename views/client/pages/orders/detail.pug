@@ -92,8 +92,11 @@ block main
               span Thành tiền
               span= order.totalAmount.toLocaleString('vi-VN') + '₫'
 
-        .mt-2.mb-4
+        .mt-2.mb-4.d-flex.align-items-center
           a.tz-btn-back(href="/orders")
             i.fas.fa-arrow-left.mr-2
             | Quay lại đơn hàng
+          a.btn.btn-outline-primary.ml-3(href=`/orders/${order._id}/invoice` target="_blank")
+            i.fas.fa-file-pdf.mr-2
+            | Tải hóa đơn PDF
 
