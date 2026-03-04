@@ -380,6 +380,82 @@ h6 {
   text-decoration: none;
 }
 
+/* ===== Voice Search Button ===== */
+.tz-voice-btn {
+  background: transparent;
+  border: 1px solid var(--tz-border);
+  border-left: none;
+  color: var(--tz-text-light);
+  padding: 0 12px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: var(--tz-transition);
+}
+.tz-voice-btn:hover {
+  color: var(--tz-blue);
+  background: var(--tz-blue-light);
+}
+.tz-voice-btn.listening {
+  color: #e74c3c;
+  animation: voicePulse 1s infinite;
+}
+@keyframes voicePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* Voice Search Modal Overlay */
+.tz-voice-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 9999;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+.tz-voice-overlay.active {
+  display: flex;
+}
+.tz-voice-overlay .voice-circle {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: var(--tz-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: voicePulse 1s infinite;
+  margin-bottom: 20px;
+}
+.tz-voice-overlay .voice-circle i {
+  font-size: 36px;
+  color: #fff;
+}
+.tz-voice-overlay .voice-text {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 500;
+}
+.tz-voice-overlay .voice-result {
+  color: #fff;
+  font-size: 24px;
+  font-weight: 700;
+  margin-top: 12px;
+  min-height: 36px;
+}
+.tz-voice-overlay .voice-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  color: #fff;
+  font-size: 28px;
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
 /* Category nav */
 .tz-header-nav {
   background: var(--tz-white);

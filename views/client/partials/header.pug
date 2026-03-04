@@ -20,8 +20,10 @@ header.tz-header.sticky-top.bg-white.shadow-sm
               .input-group-prepend
                 span.input-group-text.bg-white.border-right-0
                   i.fas.fa-search.text-muted
-              input.form-control.border-left-0(type="text" name="keyword" placeholder="Tìm kiếm sản phẩm, thương hiệu..." autocomplete="off")
+              input#desktopSearchInput.form-control.border-left-0(type="text" name="keyword" placeholder="Tìm kiếm sản phẩm, thương hiệu..." autocomplete="off")
               .input-group-append
+                button.btn.tz-voice-btn(type="button" title="Tìm bằng giọng nói" onclick="startVoiceSearch('desktopSearchInput')")
+                  i.fas.fa-microphone
                 button.btn.btn-primary.tz-search-btn(type="submit") Tìm
         
         //- Cột Công cụ xử lý

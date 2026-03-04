@@ -313,3 +313,81 @@ document.addEventListener("DOMContentLoaded", function () {
   updateCountdown();
   setInterval(updateCountdown, 1000);
 });
+
+// ===== Voice Search (Web Speech API) =====
+var voiceRecognition = null;
+var voiceTargetInput = null;
+
+function startVoiceSearch(inputId) {
+  var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    alert("Trình duyệt của bạn không hỗ trợ tìm kiếm giọng nói. Vui lòng dùng Chrome hoặc Edge.");
+    return;
+  }
+
+  voiceTargetInput = document.getElementById(inputId);
+  var overlay = document.getElementById("voiceOverlay");
+  var resultEl = document.getElementById("voiceResult");
+
+  // Show overlay
+  overlay.classList.add("active");
+  resultEl.textContent = "";
+
+  // Init recognition
+  voiceRecognition = new SpeechRecognition();
+  voiceRecognition.lang = "vi-VN"; // Tiếng Việt
+  voiceRecognition.interimResults = true;
+  voiceRecognition.maxAlternatives = 1;
+  voiceRecognition.continuous = false;
+
+  voiceRecognition.onresult = function(event) {
+    var transcript = "";
+    for (var i = event.resultIndex; i < event.results.length; i++) {
+      transcript += event.results[i][0].transcript;
+    }
+    resultEl.textContent = '"' + transcript + '"';
+
+    // If final result, fill input and search
+    if (event.results[event.results.length - 1].isFinal) {
+      if (voiceTargetInput) {
+        voiceTargetInput.value = transcript;
+      }
+      setTimeout(function() {
+        overlay.classList.remove("active");
+        // Submit the search form
+        if (voiceTargetInput) {
+          var form = voiceTargetInput.closest("form");
+          if (form) form.submit();
+        }
+      }, 800);
+    }
+  };
+
+  voiceRecognition.onerror = function(event) {
+    console.error("Voice search error:", event.error);
+    resultEl.textContent = "Không nhận được giọng nói. Thử lại!";
+    setTimeout(function() {
+      overlay.classList.remove("active");
+    }, 1500);
+  };
+
+  voiceRecognition.onend = function() {
+    // If overlay is still active and no result, close after delay
+    setTimeout(function() {
+      if (overlay.classList.contains("active") && !resultEl.textContent.startsWith('"')) {
+        overlay.classList.remove("active");
+      }
+    }, 2000);
+  };
+
+  voiceRecognition.start();
+}
+
+function stopVoiceSearch() {
+  if (voiceRecognition) {
+    voiceRecognition.abort();
+    voiceRecognition = null;
+  }
+  var overlay = document.getElementById("voiceOverlay");
+  if (overlay) overlay.classList.remove("active");
+}
