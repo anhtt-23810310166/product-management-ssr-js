@@ -26,6 +26,15 @@ mixin productCard(product)
       )
         i(class=isWished ? "fas fa-heart" : "far fa-heart")
 
+      //- Nút so sánh
+      button.tz-compare-btn(
+        type="button"
+        title="So sánh"
+        data-product-id=product._id
+        onclick="toggleCompare(this)"
+      )
+        i.fas.fa-exchange-alt
+
       if product.stock > 0
         form.tz-cart-form(action=`/cart/add/${product._id}` method="POST")
           input(type="hidden" name="quantity" value="1")

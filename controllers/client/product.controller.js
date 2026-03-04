@@ -128,6 +128,44 @@ module.exports.index = async (req, res) => {
     }
 }
 
+// [GET] /products/compare?ids=id1,id2,id3
+module.exports.compare = async (req, res) => {
+    try {
+        const ids = req.query.ids ? req.query.ids.split(",").filter(Boolean) : [];
+
+        let products = [];
+        if (ids.length > 0) {
+            products = await Product.find({
+                _id: { $in: ids },
+                status: "active",
+                deleted: false
+            }).lean();
+
+            // Attach brand name
+            const brandIds = products.map(p => p.brand_id).filter(Boolean);
+            const brands = await Brand.find({ _id: { $in: brandIds } }).lean();
+            const brandMap = {};
+            brands.forEach(b => { brandMap[b._id.toString()] = b.name; });
+
+            products = products.map(p => {
+                p.brandName = brandMap[p.brand_id] || "—";
+                p.priceNew = p.discountPercentage
+                    ? Math.round(p.price * (1 - p.discountPercentage / 100))
+                    : p.price;
+                return p;
+            });
+        }
+
+        res.render("client/pages/products/compare", {
+            pageTitle: "So sánh sản phẩm",
+            products: products
+        });
+    } catch (error) {
+        console.log(error);
+        res.redirect("/products");
+    }
+};
+
 // [GET] /products/detail/:slug
 module.exports.detail = async (req, res) => {
     try {

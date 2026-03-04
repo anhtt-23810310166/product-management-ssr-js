@@ -511,3 +511,85 @@ function setPriceRange(min, max) {
   var form = document.getElementById("filter-form");
   if (form) form.submit();
 }
+
+// ===== Product Compare =====
+function getCompareList() {
+  try { return JSON.parse(localStorage.getItem("compareList") || "[]"); }
+  catch(e) { return []; }
+}
+
+function saveCompareList(list) {
+  localStorage.setItem("compareList", JSON.stringify(list));
+}
+
+function toggleCompare(btn) {
+  var id = btn.getAttribute("data-product-id");
+  if (!id) return;
+  var list = getCompareList();
+  var idx = list.indexOf(id);
+
+  if (idx === -1) {
+    if (list.length >= 4) {
+      alert("Chỉ được so sánh tối đa 4 sản phẩm!");
+      return;
+    }
+    list.push(id);
+    btn.classList.add("active");
+  } else {
+    list.splice(idx, 1);
+    btn.classList.remove("active");
+  }
+
+  saveCompareList(list);
+  updateCompareUI();
+}
+
+function clearCompare() {
+  saveCompareList([]);
+  updateCompareUI();
+  // Remove active class from all compare buttons
+  document.querySelectorAll(".tz-compare-btn").forEach(function(b) {
+    b.classList.remove("active");
+  });
+}
+
+function goCompare() {
+  var list = getCompareList();
+  if (list.length < 2) {
+    alert("Chọn ít nhất 2 sản phẩm để so sánh!");
+    return;
+  }
+  window.location.href = "/products/compare?ids=" + list.join(",");
+}
+
+function updateCompareUI() {
+  var list = getCompareList();
+  var bar = document.getElementById("compareBar");
+  var countEl = document.getElementById("compareCount");
+
+  if (bar) {
+    if (list.length > 0) {
+      bar.classList.add("show");
+    } else {
+      bar.classList.remove("show");
+    }
+  }
+  if (countEl) {
+    countEl.textContent = list.length;
+  }
+
+  // Highlight active buttons
+  document.querySelectorAll(".tz-compare-btn").forEach(function(btn) {
+    var id = btn.getAttribute("data-product-id");
+    if (list.indexOf(id) !== -1) {
+      btn.classList.add("active");
+    } else {
+      btn.classList.remove("active");
+    }
+  });
+}
+
+// Init compare UI on page load
+document.addEventListener("DOMContentLoaded", function() {
+  updateCompareUI();
+});

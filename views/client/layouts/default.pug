@@ -34,6 +34,17 @@ html
       .voice-text Đang lắng nghe...
       .voice-result#voiceResult
 
+    //- Compare Floating Bar
+    #compareBar.tz-compare-bar
+      .container.d-flex.align-items-center.justify-content-between
+        .d-flex.align-items-center
+          i.fas.fa-exchange-alt.mr-2
+          span#compareCount 0
+          |  sản phẩm đang so sánh
+        .d-flex.align-items-center
+          button.btn.btn-sm.btn-outline-light.mr-2(onclick="clearCompare()") Xóa tất cả
+          button.btn.btn-sm.btn-warning.font-weight-bold(onclick="goCompare()") So sánh ngay
+
     script(src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous")
     script(src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous")
     
