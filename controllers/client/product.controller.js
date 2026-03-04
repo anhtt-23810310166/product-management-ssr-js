@@ -337,3 +337,40 @@ module.exports.suggest = async (req, res) => {
         res.json([]);
     }
 }
+
+// [GET] /products/by-ids?ids=id1,id2,id3 - Lịch sử xem
+module.exports.getByIds = async (req, res) => {
+    try {
+        const ids = req.query.ids ? req.query.ids.split(",").filter(Boolean) : [];
+        if (ids.length === 0) return res.json([]);
+
+        const products = await Product.find({
+            _id: { $in: ids },
+            status: "active",
+            deleted: false
+        }).select("title slug thumbnail price discountPercentage").lean();
+
+        // Giữ đúng thứ tự IDs
+        const productMap = {};
+        products.forEach(p => { productMap[p._id.toString()] = p; });
+
+        const ordered = ids
+            .map(id => productMap[id])
+            .filter(Boolean)
+            .map(p => ({
+                _id: p._id,
+                title: p.title,
+                slug: p.slug,
+                thumbnail: p.thumbnail,
+                price: p.price,
+                priceNew: p.discountPercentage
+                    ? Math.round(p.price * (1 - p.discountPercentage / 100))
+                    : p.price,
+                discount: p.discountPercentage || 0
+            }));
+
+        res.json(ordered);
+    } catch (error) {
+        res.json([]);
+    }
+};
