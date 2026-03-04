@@ -4,7 +4,11 @@ const cloudinary = require("../config/cloudinary");
 
 let onlineUsers = {}; // Map socket.id => userId
 
-module.exports = (io) => {
+module.exports = async (io) => {
+    // ---- Reset tất cả statusOnline = false khi Server khởi động ----
+    await User.updateMany({}, { statusOnline: false });
+    console.log("[Socket] Reset all users statusOnline to false");
+
     io.on("connection", (socket) => {
         // ----- Tham gia phòng kín (Room Private) -----
         socket.on("CLIENT_JOIN_ROOM", (roomChatId) => {

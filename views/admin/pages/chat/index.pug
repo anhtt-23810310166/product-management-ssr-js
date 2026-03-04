@@ -33,6 +33,8 @@ block main
                             else
                               i.fas.fa-circle.text-muted(style="font-size: 10px;" title="Offline")
                       small.text-muted Bấm để hỗ trợ ngay
+                    button.btn.btn-sm.text-danger.ml-1.delete-room-btn(type="button" data-room-id=room.id title="Xóa phòng" onclick=`event.preventDefault();deleteRoom('${room.id}')`)
+                      i.fas.fa-trash-alt
             else
               .p-4.text-center.text-muted
                 i.fas.fa-check-circle.fa-2x.mb-2.text-success
@@ -72,14 +74,17 @@ block main
                 if chat.sender_type === "admin"
                   // Bọt thoại Admin
                   .d-flex.justify-content-end.mb-3.chat-message.chat-message-self(data-sender-id=chat.sender_id)
-                    .bg-primary.text-white.p-2.shadow-sm(style="border-radius: 15px; max-width: 75%; border-top-right-radius: 0 !important;")
-                      p.mb-1(style="word-wrap: break-word; font-size: 14px;")= chat.content
-                      if chat.images && chat.images.length > 0
-                        .chat-mb-images.mt-2
-                          each img in chat.images
-                            a(href=img target="_blank")
-                              img.img-thumbnail.mr-1(src=img height="60" style="object-fit: scale-down; max-width: 100px;")
-                      small.text-white-50.d-block.text-right(style="font-size: 0.75rem;")= new Date(chat.createdAt).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })
+                    .position-relative
+                      .bg-primary.text-white.p-2.shadow-sm(style="border-radius: 15px; max-width: 75%; border-top-right-radius: 0 !important;")
+                        p.mb-1(style="word-wrap: break-word; font-size: 14px;")= chat.content
+                        if chat.images && chat.images.length > 0
+                          .chat-mb-images.mt-2
+                            each img in chat.images
+                              a(href=img target="_blank")
+                                img.img-thumbnail.mr-1(src=img height="60" style="object-fit: scale-down; max-width: 100px;")
+                        small.text-white-50.d-block.text-right(style="font-size: 0.75rem;")= new Date(chat.createdAt).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })
+                      button.btn.btn-sm.text-danger.position-absolute(style="top: 0; right: -28px;" onclick=`deleteMessage('${chat._id}', this)` title="Xóa tin nhắn")
+                        i.fas.fa-times-circle
                 
                 else if chat.sender_type === "user"
                   // Bọt thoại Khách hàng

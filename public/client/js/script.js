@@ -593,3 +593,16 @@ function updateCompareUI() {
 document.addEventListener("DOMContentLoaded", function() {
   updateCompareUI();
 });
+
+// ===== Trạng thái trực tuyến (Global - chạy trên mọi trang) =====
+(function() {
+  var myUserIdEl = document.getElementById("myUserId");
+  if (!myUserIdEl) return; // Chưa đăng nhập -> không làm gì
+  
+  var userId = myUserIdEl.getAttribute("data-id");
+  if (!userId) return;
+
+  // socket được load từ /socket.io/socket.io.js (đã có trong layout)
+  var globalSocket = io();
+  globalSocket.emit("CLIENT_ONLINE", userId);
+})();

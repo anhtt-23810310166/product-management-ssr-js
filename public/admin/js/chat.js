@@ -149,3 +149,57 @@
     });
 
 })();
+
+// ===== CRUD: Xóa phòng chat =====
+function deleteRoom(roomId) {
+    if (!confirm("Bạn có chắc muốn xóa phòng chat này? Tất cả tin nhắn sẽ bị xóa!")) return;
+
+    fetch(`/admin/chat/delete-room/${roomId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.code === 200) {
+            // Xóa item ra khỏi sidebar
+            const li = document.querySelector(`[data-room-id="${roomId}"]`);
+            if (li) li.closest("a").remove();
+            // Nếu đang xem room đó thì redirect về trang chủ chat
+            const roomInput = document.getElementById("roomChatId");
+            if (roomInput && roomInput.value === roomId) {
+                window.location.href = "/admin/chat";
+            }
+        } else {
+            alert(data.message || "Xóa thất bại!");
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Có lỗi xảy ra!");
+    });
+}
+
+// ===== CRUD: Xóa tin nhắn =====
+function deleteMessage(messageId, btn) {
+    if (!confirm("Bạn có chắc muốn xóa tin nhắn này không?")) return;
+
+    fetch(`/admin/chat/delete-message/${messageId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.code === 200) {
+            // Xóa bong bóng chat ra khỏi giao diện
+            const msgEl = btn.closest(".chat-message");
+            if (msgEl) msgEl.remove();
+        } else {
+            alert(data.message || "Xóa thất bại!");
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Có lỗi xảy ra!");
+    });
+}
+
