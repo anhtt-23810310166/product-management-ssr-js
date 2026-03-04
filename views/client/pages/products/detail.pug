@@ -1,4 +1,5 @@
 extends ../../layouts/default
+include ../../mixins/product-card.pug
 
 block main
   .container.py-4
@@ -302,6 +303,17 @@ block main
         });
       });
     }
+
+  //- Sản phẩm liên quan
+  if relatedProducts && relatedProducts.length > 0
+    .container.mb-4
+      h5.font-weight-bold.mb-3
+        i.fas.fa-th-large.mr-2
+        | Sản phẩm liên quan
+      .row
+        each rp in relatedProducts
+          .col-lg-3.col-md-4.col-6.mb-3
+            +productCard(rp)
 
   //- Sản phẩm đã xem gần đây
   .container.mb-5#recentlyViewedSection(style="display:none;")

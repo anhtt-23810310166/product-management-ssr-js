@@ -281,6 +281,30 @@ module.exports.detail = async (req, res) => {
                 soldCount += item.quantity;
             }
         }
+        // Gợi ý sản phẩm liên quan (cùng danh mục hoặc thương hiệu)
+        const relatedQuery = {
+            _id: { $ne: product._id },
+            status: "active",
+            deleted: false,
+            stock: { $gt: 0 }
+        };
+
+        // Ưu tiên cùng danh mục, nếu có brand thì OR thêm
+        const orConditions = [];
+        if (product.product_category_id) {
+            orConditions.push({ product_category_id: product.product_category_id });
+        }
+        if (product.brand_id) {
+            orConditions.push({ brand_id: product.brand_id });
+        }
+        if (orConditions.length > 0) {
+            relatedQuery.$or = orConditions;
+        }
+
+        const relatedProducts = await Product.find(relatedQuery)
+            .sort({ position: -1 })
+            .limit(4)
+            .lean();
 
         res.render("client/pages/products/detail", {
             title: product.title,
@@ -292,7 +316,8 @@ module.exports.detail = async (req, res) => {
             canReview: canReview,
             hasReviewed: hasReviewed,
             soldCount: soldCount,
-            flashDiscount: flashDiscount
+            flashDiscount: flashDiscount,
+            relatedProducts: relatedProducts
         });
     } catch (error) {
         res.redirect("/products");
