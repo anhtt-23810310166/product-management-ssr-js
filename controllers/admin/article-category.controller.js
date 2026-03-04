@@ -123,23 +123,13 @@ module.exports.create = async (req, res) => {
 // [POST] /admin/article-category/create
 module.exports.createPost = async (req, res) => {
     try {
-        if (req.file) {
-            req.body.thumbnail = req.file.path;
-        }
-
-        if (req.body.position) {
-            req.body.position = parseInt(req.body.position);
-        } else {
-            const count = await ArticleCategory.countDocuments({ deleted: false });
-            req.body.position = count + 1;
-        }
-
-        await ArticleCategory.create(req.body);
+        const articleCategoryService = require("../../services/article-category.service");
+        const category = await articleCategoryService.create(req.body, req.file);
 
         createLog(req, res, {
             action: "create",
             module: "article-category",
-            description: `Thêm danh mục bài viết: ${req.body.title}`
+            description: `Thêm danh mục bài viết: ${category.title}`
         });
 
         req.flash("success", "Tạo danh mục thành công!");
@@ -188,26 +178,23 @@ module.exports.editPatch = async (req, res) => {
         const returnUrl = req.body.returnUrl;
         delete req.body.returnUrl;
 
-        if (req.file) {
-            req.body.thumbnail = req.file.path;
-        }
-
-        if (req.body.position) {
-            req.body.position = parseInt(req.body.position);
-        }
-
-        await ArticleCategory.updateOne({ _id: req.params.id }, req.body);
+        const articleCategoryService = require("../../services/article-category.service");
+        const category = await articleCategoryService.update(req.params.id, req.body, req.file);
 
         createLog(req, res, {
             action: "edit",
             module: "article-category",
-            description: `Chỉnh sửa danh mục bài viết: ${req.body.title}`
+            description: `Chỉnh sửa danh mục bài viết: ${category.title}`
         });
 
         req.flash("success", "Cập nhật danh mục thành công!");
         res.redirect(returnUrl || `${prefixAdmin}/article-category`);
     } catch (error) {
         console.log(error);
+        if (error.message === "NOT_FOUND") {
+            req.flash("error", "Danh mục không tồn tại!");
+            return res.redirect(`${prefixAdmin}/article-category`);
+        }
         req.flash("error", "Cập nhật thất bại!");
         res.redirect("back");
     }

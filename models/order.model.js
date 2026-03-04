@@ -45,6 +45,16 @@ const orderSchema = new mongoose.Schema({
         default: 0
     },
 
+    // Mã giảm giá
+    discountCode: {
+        type: String,
+        default: ""
+    },
+    discountAmount: {
+        type: Number,
+        default: 0
+    },
+
     // Trạng thái đơn hàng
     status: {
         type: String,

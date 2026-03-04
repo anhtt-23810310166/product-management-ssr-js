@@ -1,6 +1,8 @@
 const BaseService = require("./base.service");
 const Account = require("../models/account.model");
 const searchHelper = require("../helpers/search");
+const bcrypt = require("bcryptjs");
+const generate = require("../helpers/generate");
 
 class AccountService extends BaseService {
     constructor() {
@@ -49,6 +51,43 @@ class AccountService extends BaseService {
             sortOptions: objectSort.sortOptions,
             pagination: objectPagination
         };
+    }
+
+    /**
+     * Tạo mới tài khoản quản trị
+     */
+    async create(data, file) {
+        data.password = bcrypt.hashSync(data.password, 10);
+        data.token = generate.generateRandomString(20);
+
+        if (file) {
+            data.avatar = file.path;
+        }
+
+        const account = new this.Model(data);
+        await account.save();
+        return account;
+    }
+
+    /**
+     * Cập nhật tài khoản
+     */
+    async update(id, data, file) {
+        const account = await this.Model.findById(id);
+        if (!account) throw new Error("NOT_FOUND");
+
+        if (data.password) {
+            data.password = bcrypt.hashSync(data.password, 10);
+        } else {
+            delete data.password;
+        }
+
+        if (file) {
+            data.avatar = file.path;
+        }
+
+        await this.Model.updateOne({ _id: id }, data);
+        return await this.Model.findById(id);
     }
 }
 

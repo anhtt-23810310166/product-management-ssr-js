@@ -1,0 +1,76 @@
+extends ../../layouts/default.pug
+include ../../mixins/page-header.pug
+
+block main
+  div(data-crud=`${prefixAdmin}/discounts` data-entity-name="mã giảm giá" style="display:none")
+  +pageHeader("Quản lý mã giảm giá", "Tạo và quản lý mã giảm giá cho khách hàng")
+    a.btn.btn-add-product(href=`${prefixAdmin}/discounts/create`)
+      i.fas.fa-plus.mr-2
+      | Thêm mã giảm giá
+
+  .admin-table-wrapper
+    if discounts && discounts.length > 0
+      table.admin-table
+        thead
+          tr
+            th.col-stt STT
+            th.col-title Mã giảm giá
+            th Loại
+            th Giá trị
+            th Đơn tối thiểu
+            th Đã dùng / Giới hạn
+            th Hạn sử dụng
+            th.col-status Trạng thái
+        tbody
+          each discount, index in discounts
+            tr.animate-in
+              td.col-stt= index + 1
+              td.col-title
+                .product-title-cell
+                  span.product-name= discount.code
+                  if discount.description
+                    span.category-tag= discount.description
+                .product-hover-actions
+                  a.hover-action-link.hover-action-edit(href=`${prefixAdmin}/discounts/edit/${discount._id}`) Sửa
+                  if discount.status === "active"
+                    a.hover-action-link.hover-action-status.btn-change-status(href="javascript:void(0)" data-id=discount._id data-status="active") Dừng hoạt động
+                  else
+                    a.hover-action-link.hover-action-status.btn-change-status(href="javascript:void(0)" data-id=discount._id data-status="inactive") Hoạt động
+                  a.hover-action-link.hover-action-danger(href="javascript:void(0)" data-id=discount._id) Xoá
+              td= discount.type === "percentage" ? "Phần trăm" : "Cố định"
+              td
+                if discount.type === "percentage"
+                  | #{discount.value}%
+                  if discount.maxDiscount > 0
+                    br
+                    small (tối đa #{discount.maxDiscount.toLocaleString('vi-VN')}₫)
+                else
+                  | #{discount.value.toLocaleString('vi-VN')}₫
+              td= discount.minOrder > 0 ? discount.minOrder.toLocaleString('vi-VN') + '₫' : '—'
+              td
+                span #{discount.usedCount}
+                if discount.usageLimit > 0
+                  |  / #{discount.usageLimit}
+                else
+                  |  / ∞
+              td
+                - var now = new Date()
+                - var end = new Date(discount.endDate)
+                if end < now
+                  span.status-badge.status-inactive Hết hạn
+                else
+                  div
+                    | #{new Date(discount.startDate).toLocaleDateString('vi-VN')} - #{end.toLocaleDateString('vi-VN')}
+              td.col-status
+                if discount.status === "active"
+                  span.status-badge.status-active Hoạt động
+                else
+                  span.status-badge.status-inactive Tạm dừng
+    else
+      .admin-empty-state
+        i.fas.fa-ticket-alt(style="font-size: 48px; color: #ddd")
+        h4 Chưa có mã giảm giá nào
+        p Tạo mã giảm giá đầu tiên để thu hút khách hàng
+        a.btn.btn-add-product(href=`${prefixAdmin}/discounts/create`)
+          i.fas.fa-plus.mr-2
+          | Thêm mã giảm giá

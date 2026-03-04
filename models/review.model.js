@@ -21,6 +21,15 @@ const reviewSchema = new mongoose.Schema({
         type: String,
         default: ""
     },
+    replies: [
+        {
+            adminId: String,
+            adminFullName: String,
+            content: String,
+            createdAt: { type: Date, default: Date.now },
+            deleted: { type: Boolean, default: false }
+        }
+    ],
     deleted: {
         type: Boolean,
         default: false

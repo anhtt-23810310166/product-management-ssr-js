@@ -63,22 +63,7 @@ module.exports.create = async (req, res) => {
 // [POST] /admin/products/create
 module.exports.createPost = async (req, res) => {
     try {
-        req.body.price = parseInt(req.body.price) || 0;
-        req.body.discountPercentage = parseInt(req.body.discountPercentage) || 0;
-        req.body.stock = parseInt(req.body.stock) || 0;
-        req.body.position = await productService.autoPosition(req.body.position);
-
-        if (req.files && req.files["thumbnail"] && req.files["thumbnail"].length > 0) {
-            req.body.thumbnail = req.files["thumbnail"][0].path;
-        }
-
-        // Xử lý nhiều ảnh phụ
-        if (req.files && req.files["images"] && req.files["images"].length > 0) {
-            req.body.images = req.files["images"].map(file => file.path);
-        }
-
-        const product = new Product(req.body);
-        await product.save();
+        const product = await productService.create(req.body, req.files);
 
         createLog(req, res, {
             action: "create",
@@ -129,42 +114,7 @@ module.exports.edit = async (req, res) => {
 // [PATCH] /admin/products/edit/:id
 module.exports.editPatch = async (req, res) => {
     try {
-        const product = await Product.findById(req.params.id);
-        if (!product) {
-            req.flash("error", "Sản phẩm không tồn tại!");
-            return res.redirect(`${prefixAdmin}/products`);
-        }
-
-        product.title = req.body.title;
-        product.product_category_id = req.body.product_category_id || "";
-        product.brand_id = req.body.brand_id || "";
-        product.description = req.body.description;
-        product.price = parseInt(req.body.price) || 0;
-        product.discountPercentage = parseInt(req.body.discountPercentage) || 0;
-        product.stock = parseInt(req.body.stock) || 0;
-        product.position = parseInt(req.body.position) || 0;
-        product.status = req.body.status;
-        product.featured = req.body.featured === "true" ? true : false;
-
-        if (req.files && req.files["thumbnail"] && req.files["thumbnail"].length > 0) {
-            product.thumbnail = req.files["thumbnail"][0].path;
-        }
-
-        // Xử lý xóa ảnh phụ cũ
-        if (req.body.deletedImages) {
-            const deletedImages = Array.isArray(req.body.deletedImages)
-                ? req.body.deletedImages
-                : [req.body.deletedImages];
-            product.images = (product.images || []).filter(img => !deletedImages.includes(img));
-        }
-
-        // Xử lý thêm ảnh phụ mới
-        if (req.files && req.files["images"] && req.files["images"].length > 0) {
-            const newImages = req.files["images"].map(file => file.path);
-            product.images = [...(product.images || []), ...newImages];
-        }
-
-        await product.save();
+        const product = await productService.update(req.params.id, req.body, req.files);
 
         createLog(req, res, {
             action: "edit",
@@ -175,6 +125,10 @@ module.exports.editPatch = async (req, res) => {
         req.flash("success", "Cập nhật sản phẩm thành công!");
         res.redirect(req.body.returnUrl || `${prefixAdmin}/products`);
     } catch (error) {
+        if (error.message === "NOT_FOUND") {
+            req.flash("error", "Sản phẩm không tồn tại!");
+            return res.redirect(`${prefixAdmin}/products`);
+        }
         req.flash("error", "Có lỗi xảy ra!");
         res.redirect("back");
     }

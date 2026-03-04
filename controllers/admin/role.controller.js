@@ -1,7 +1,4 @@
-const Role = require("../../models/role.model");
-const searchHelper = require("../../helpers/search");
-const paginationHelper = require("../../helpers/pagination");
-const sortHelper = require("../../helpers/sort");
+const roleService = require("../../services/role.service");
 const systemConfig = require("../../config/system");
 const prefixAdmin = systemConfig.prefixAdmin;
 const createLog = require("../../helpers/activityLog");
@@ -9,31 +6,7 @@ const createLog = require("../../helpers/activityLog");
 // [GET] /admin/roles
 module.exports.index = async (req, res) => {
     try {
-        const find = { deleted: false };
-
-        // Search
-        const objectSearch = searchHelper(req.query);
-        if (objectSearch.regex) {
-            find.title = objectSearch.regex;
-        }
-
-        // Sort
-        const sortOptions = [
-            { value: "title-asc", label: "Tiêu đề A - Z" },
-            { value: "title-desc", label: "Tiêu đề Z - A" },
-            { value: "createdAt-desc", label: "Mới nhất" },
-            { value: "createdAt-asc", label: "Cũ nhất" }
-        ];
-        const objectSort = sortHelper(req.query, sortOptions);
-
-        // Pagination
-        const totalItems = await Role.countDocuments(find);
-        const objectPagination = paginationHelper(req.query, totalItems, 20);
-
-        const roles = await Role.find(find)
-            .sort(objectSort.sortObject)
-            .skip(objectPagination.skip)
-            .limit(objectPagination.limitItems);
+        const result = await roleService.list(req.query);
 
         res.render("admin/pages/roles/index", {
             pageTitle: "Danh sách nhóm quyền",
@@ -42,13 +15,13 @@ module.exports.index = async (req, res) => {
                 { title: "Cài đặt", link: `${prefixAdmin}/settings` },
                 { title: "Nhóm quyền" }
             ],
-            roles: roles,
-            keyword: objectSearch.keyword,
-            sortOptions: objectSort.sortOptions,
-            pagination: objectPagination
+            roles: result.items,
+            keyword: result.keyword,
+            sortOptions: result.sortOptions,
+            pagination: result.pagination
         });
     } catch (error) {
-        console.log(error);
+        console.error("ROLE INDEX ERROR", error);
         res.redirect("back");
     }
 };
@@ -69,8 +42,7 @@ module.exports.create = (req, res) => {
 // [POST] /admin/roles/create
 module.exports.createPost = async (req, res) => {
     try {
-        const role = new Role(req.body);
-        await role.save();
+        const role = await roleService.create(req.body);
 
         createLog(req, res, {
             action: "create",
@@ -81,7 +53,7 @@ module.exports.createPost = async (req, res) => {
         req.flash("success", "Thêm nhóm quyền thành công!");
         res.redirect(`${prefixAdmin}/roles`);
     } catch (error) {
-        console.log(error);
+        console.error("ROLE CREATE ERROR", error);
         req.flash("error", "Thêm nhóm quyền thất bại!");
         res.redirect("back");
     }
@@ -90,7 +62,7 @@ module.exports.createPost = async (req, res) => {
 // [GET] /admin/roles/edit/:id
 module.exports.edit = async (req, res) => {
     try {
-        const role = await Role.findOne({ _id: req.params.id, deleted: false });
+        const role = await roleService.findById(req.params.id);
         if (!role) {
             req.flash("error", "Nhóm quyền không tồn tại!");
             return res.redirect(`${prefixAdmin}/roles`);
@@ -106,7 +78,7 @@ module.exports.edit = async (req, res) => {
             role: role,
         });
     } catch (error) {
-        console.log(error);
+        console.error("ROLE EDIT ERROR", error);
         res.redirect("back");
     }
 };
@@ -114,21 +86,22 @@ module.exports.edit = async (req, res) => {
 // [PATCH] /admin/roles/edit/:id
 module.exports.editPatch = async (req, res) => {
     try {
-        const returnUrl = req.body.returnUrl;
-        delete req.body.returnUrl;
-
-        await Role.updateOne({ _id: req.params.id }, req.body);
+        const role = await roleService.update(req.params.id, req.body);
 
         createLog(req, res, {
             action: "edit",
             module: "roles",
-            description: `Chỉnh sửa nhóm quyền: ${req.body.title}`
+            description: `Chỉnh sửa nhóm quyền: ${role.title}`
         });
 
         req.flash("success", "Cập nhật nhóm quyền thành công!");
         res.redirect(req.body.returnUrl || `${prefixAdmin}/roles`);
     } catch (error) {
-        console.log(error);
+        console.error("ROLE UPDATE ERROR", error);
+        if (error.message === "NOT_FOUND") {
+            req.flash("error", "Nhóm quyền không tồn tại!");
+            return res.redirect(`${prefixAdmin}/roles`);
+        }
         req.flash("error", "Cập nhật nhóm quyền thất bại!");
         res.redirect("back");
     }
@@ -137,39 +110,29 @@ module.exports.editPatch = async (req, res) => {
 // [DELETE] /admin/roles/delete/:id
 module.exports.delete = async (req, res) => {
     try {
-        const result = await Role.updateOne({ _id: req.params.id }, { deleted: true, deletedAt: new Date() });
+        const { modified } = await roleService.softDelete(req.params.id);
 
-        if (result.modifiedCount > 0) {
+        if (modified) {
             createLog(req, res, {
                 action: "delete",
                 module: "roles",
                 description: `Xoá nhóm quyền (ID: ${req.params.id})`
             });
 
-            res.json({
-                code: 200,
-                message: "Xóa nhóm quyền thành công!"
-            });
+            res.json({ code: 200, message: "Xóa nhóm quyền thành công!" });
         } else {
-            res.json({
-                code: 200,
-                message: "Không có thay đổi nào!",
-                noChange: true
-            });
+            res.json({ code: 200, message: "Không có thay đổi nào!", noChange: true });
         }
     } catch (error) {
-        console.log(error);
-        res.json({
-            code: 400,
-            message: "Xóa nhóm quyền thất bại!"
-        });
+        console.error("ROLE DELETE ERROR", error);
+        res.json({ code: 400, message: "Xóa nhóm quyền thất bại!" });
     }
 };
 
 // [GET] /admin/roles/detail/:id
 module.exports.detail = async (req, res) => {
     try {
-        const role = await Role.findOne({ _id: req.params.id, deleted: false });
+        const role = await roleService.findById(req.params.id);
         if (!role) {
             req.flash("error", "Nhóm quyền không tồn tại!");
             return res.redirect(`${prefixAdmin}/roles`);
@@ -185,7 +148,7 @@ module.exports.detail = async (req, res) => {
             role: role,
         });
     } catch (error) {
-        console.log(error);
+        console.error("ROLE DETAIL ERROR", error);
         res.redirect("back");
     }
 };
@@ -193,7 +156,7 @@ module.exports.detail = async (req, res) => {
 // [GET] /admin/roles/permissions
 module.exports.permissions = async (req, res) => {
     try {
-        const roles = await Role.find({ deleted: false });
+        const roles = await roleService.getAll();
 
         res.render("admin/pages/roles/permissions", {
             pageTitle: "Phân quyền",
@@ -205,7 +168,7 @@ module.exports.permissions = async (req, res) => {
             roles: roles
         });
     } catch (error) {
-        console.log(error);
+        console.error("ROLE PERM GET ERROR", error);
         res.redirect("back");
     }
 };
@@ -214,23 +177,16 @@ module.exports.permissions = async (req, res) => {
 module.exports.permissionsPatch = async (req, res) => {
     try {
         const permissions = JSON.parse(req.body.permissions);
-
-        for (const item of permissions) {
-            await Role.updateOne(
-                { _id: item.id },
-                { permissions: item.permissions }
-            );
-        }
+        await roleService.updatePermissions(permissions);
 
         req.flash("success", "Cập nhật phân quyền thành công!");
-
         createLog(req, res, {
             action: "permissions",
             module: "roles",
             description: `Cập nhật phân quyền cho ${permissions.length} nhóm`
         });
     } catch (error) {
-        console.log(error);
+        console.error("ROLE PERM PATCH ERROR", error);
         req.flash("error", "Cập nhật phân quyền thất bại!");
     }
 

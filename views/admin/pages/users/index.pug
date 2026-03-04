@@ -6,6 +6,7 @@ include ../../mixins/sort.pug
 include ../../mixins/pagination.pug
 
 block main
+  div(data-crud=`${prefixAdmin}/users` data-entity-name="khách hàng" style="display:none")
   +pageHeader("Danh sách khách hàng", "Quản lý tài khoản khách hàng")
 
   //- Filter bar
@@ -23,7 +24,7 @@ block main
           tr
             th.col-stt STT
             th.col-img Avatar
-            th Họ tên
+            th.col-title Họ tên
             th Email
             th Điện thoại
             th.col-status Trạng thái
@@ -48,7 +49,7 @@ block main
                     a.hover-action-link.hover-action-status.btn-change-status(href="javascript:void(0)" data-id=user._id data-status="active") Khóa
                   else
                     a.hover-action-link.hover-action-status.btn-change-status(href="javascript:void(0)" data-id=user._id data-status="inactive") Mở khóa
-                  a.hover-action-link.hover-action-danger.btn-delete-user(href="javascript:void(0)" data-id=user._id) Xoá
+                  a.hover-action-link.hover-action-danger(href="javascript:void(0)" data-id=user._id) Xoá
               td= user.email
               td= user.phone || '—'
               td.col-status
@@ -67,44 +68,4 @@ block main
   +pagination(pagination)
 
 block append scripts
-  script.
-    // Change Status
-    const statusButtons = document.querySelectorAll(".btn-change-status");
-    statusButtons.forEach(function (button) {
-      button.addEventListener("click", function () {
-        const id = this.getAttribute("data-id");
-        const currentStatus = this.getAttribute("data-status");
-        const newStatus = currentStatus === "active" ? "inactive" : "active";
-
-        if (!confirm(newStatus === "inactive" ? "Bạn có chắc muốn khóa tài khoản này?" : "Bạn có chắc muốn mở khóa tài khoản này?")) return;
-
-        fetch(`${window.prefixAdmin || '/admin'}/users/change-status/${newStatus}/${id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" }
-        })
-        .then(function (res) { return res.json(); })
-        .then(function (data) {
-          if (data.code === 200) {
-            location.reload();
-          } else {
-            alert(data.message);
-          }
-        })
-        .catch(function () { alert("Lỗi kết nối!"); });
-      });
-    });
-
-    // Delete
-    const deleteButtons = document.querySelectorAll(".btn-delete-user");
-    deleteButtons.forEach(function (button) {
-      button.addEventListener("click", function () {
-        const id = this.getAttribute("data-id");
-        if (!confirm("Bạn có chắc muốn xóa khách hàng này?")) return;
-
-        const form = document.createElement("form");
-        form.method = "POST";
-        form.action = `${window.prefixAdmin || '/admin'}/users/delete/${id}?_method=DELETE`;
-        document.body.appendChild(form);
-        form.submit();
-      });
-    });
+  script(src="/admin/js/admin-crud.js")

@@ -162,9 +162,11 @@ module.exports.compare = async (req, res) => {
         });
     } catch (error) {
         console.log(error);
-        res.redirect("/products");
+        res.redirect("back");
     }
 };
+
+// Trigger Nodemon Reload v2
 
 // [GET] /products/detail/:slug
 module.exports.detail = async (req, res) => {

@@ -6,6 +6,8 @@ const sortHelper = require("../../helpers/sort");
 const paginationHelper = require("../../helpers/pagination");
 const systemConfig = require("../../config/system");
 const prefixAdmin = systemConfig.prefixAdmin;
+const userService = require("../../services/user.service");
+const createLog = require("../../helpers/activityLog");
 
 // [GET] /admin/users
 module.exports.index = async (req, res) => {
@@ -120,22 +122,13 @@ module.exports.edit = async (req, res) => {
 // [PATCH] /admin/users/edit/:id
 module.exports.editPatch = async (req, res) => {
     try {
-        const updateData = {
-            fullName: req.body.fullName,
-            email: req.body.email,
-            phone: req.body.phone,
-            status: req.body.status
-        };
+        const user = await userService.update(req.params.id, req.body, req.file);
 
-        if (req.body.password && req.body.password.trim() !== "") {
-            updateData.password = bcrypt.hashSync(req.body.password, 10);
-        }
-
-        if (req.file) {
-            updateData.avatar = req.file.path;
-        }
-
-        await User.updateOne({ _id: req.params.id }, updateData);
+        createLog(req, res, {
+            action: "edit",
+            module: "users",
+            description: `Chỉnh sửa thông tin khách hàng: ${user.fullName}`
+        });
 
         req.flash("success", "Cập nhật khách hàng thành công!");
         res.redirect(`${prefixAdmin}/users`);
@@ -156,15 +149,23 @@ module.exports.changeStatus = async (req, res) => {
             return res.json({ code: 400, message: "Trạng thái không hợp lệ!" });
         }
 
-        await User.updateOne({ _id: id }, { status });
-
+        const { modified } = await userService.changeStatus(id, status);
         const statusLabels = { active: "Hoạt động", inactive: "Khóa" };
 
-        res.json({
-            code: 200,
-            message: `Đã cập nhật trạng thái thành "${statusLabels[status]}"!`,
-            status: status
-        });
+        if (modified) {
+            createLog(req, res, {
+                action: "change-status",
+                module: "users",
+                description: `Đổi trạng thái khách hàng (ID: ${id}) sang "${statusLabels[status]}"`
+            });
+            res.json({
+                code: 200,
+                message: `Đã cập nhật trạng thái thành "${statusLabels[status]}"!`,
+                status: status
+            });
+        } else {
+            res.json({ code: 200, message: "Không có thay đổi nào!", noChange: true });
+        }
     } catch (error) {
         console.log("Change user status error:", error);
         res.json({ code: 500, message: "Lỗi cập nhật trạng thái!" });
@@ -174,13 +175,20 @@ module.exports.changeStatus = async (req, res) => {
 // [DELETE] /admin/users/delete/:id
 module.exports.deleteUser = async (req, res) => {
     try {
-        await User.updateOne({ _id: req.params.id }, { deleted: true, deletedAt: new Date() });
+        const { modified } = await userService.softDelete(req.params.id);
 
-        req.flash("success", "Đã xóa khách hàng!");
-        res.redirect("back");
+        if (modified) {
+            createLog(req, res, {
+                action: "delete",
+                module: "users",
+                description: `Xóa khách hàng (ID: ${req.params.id})`
+            });
+            res.json({ code: 200, message: "Đã xóa khách hàng!" });
+        } else {
+            res.json({ code: 200, message: "Không có thay đổi nào!", noChange: true });
+        }
     } catch (error) {
         console.log("Delete user error:", error);
-        req.flash("error", "Lỗi xóa khách hàng!");
-        res.redirect("back");
+        res.json({ code: 400, message: "Lỗi xóa khách hàng!" });
     }
 };

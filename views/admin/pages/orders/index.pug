@@ -5,6 +5,7 @@ include ../../mixins/sort.pug
 include ../../mixins/pagination.pug
 
 block main
+  div(data-crud=`${prefixAdmin}/orders` data-entity-name="đơn hàng" style="display:none")
   +pageHeader("Quản lý đơn hàng", "Quản lý tất cả đơn hàng trong hệ thống")
 
   //- Filter bar
@@ -31,7 +32,7 @@ block main
         thead
           tr
             th.col-stt STT
-            th.col-order-id Mã đơn
+            th.col-title Mã đơn
             th.col-customer Khách hàng
             th.col-items Số SP
             th.col-total Tổng tiền
@@ -41,9 +42,14 @@ block main
           each order, index in orders
             tr.animate-in
               td.col-stt= pagination.skip + index + 1
-              td.col-order-id
-                a.order-id-link(href=`${prefixAdmin}/orders/detail/${order._id}`)
-                  | ##{order._id.toString().slice(-8).toUpperCase()}
+              td.col-title
+                .product-title-cell
+                  span.product-name
+                    a.text-primary(href=`${prefixAdmin}/orders/detail/${order._id}`) ##{order._id.toString().slice(-8).toUpperCase()}
+                .product-hover-actions
+                  a.hover-action-link.hover-action-detail(href=`${prefixAdmin}/orders/detail/${order._id}`) Chi tiết
+                  if userPermissions && userPermissions.includes("orders_delete")
+                    a.hover-action-link.hover-action-danger(href="javascript:void(0)" data-id=order._id) Xoá
               td.col-customer
                 .order-customer-info
                   span.order-customer-name
@@ -65,3 +71,6 @@ block main
 
   //- Pagination
   +pagination(pagination)
+
+block append scripts
+  script(src="/admin/js/admin-crud.js")

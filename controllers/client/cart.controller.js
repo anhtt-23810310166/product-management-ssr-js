@@ -8,6 +8,7 @@ const {
     calculateCartTotal
 } = require("../../helpers/product");
 const vnpayHelper = require("../../helpers/vnpay");
+const discountService = require("../../services/discount.service");
 
 // Helper: Lấy cartItems và cartTotal từ Cart document
 const getCartDetails = async (cart) => {
@@ -378,6 +379,22 @@ module.exports.checkoutPost = async (req, res) => {
         // Xử lý phương thức thanh toán
         const paymentMethod = req.body.paymentMethod || "cod";
 
+        // Áp dụng mã giảm giá (nếu có)
+        let discountAmount = 0;
+        let discountCode = "";
+        if (req.body.discountCode) {
+            try {
+                const result = await discountService.applyCode(req.body.discountCode, totalAmount);
+                discountAmount = result.discountAmount;
+                discountCode = result.discount.code;
+                await discountService.incrementUsage(discountCode);
+            } catch (e) {
+                // Mã không hợp lệ → bỏ qua, không block đặt hàng
+            }
+        }
+
+        const finalAmount = totalAmount - discountAmount;
+
         // Tạo đơn hàng
         const order = new Order({
             userId: res.locals.clientUser ? res.locals.clientUser.id : "",
@@ -386,7 +403,9 @@ module.exports.checkoutPost = async (req, res) => {
             customerAddress,
             customerNote: customerNote || "",
             items,
-            totalAmount,
+            totalAmount: finalAmount,
+            discountCode: discountCode,
+            discountAmount: discountAmount,
             paymentMethod: paymentMethod,
             paymentStatus: "unpaid"
         });
@@ -422,6 +441,37 @@ module.exports.checkoutPost = async (req, res) => {
         console.log("Checkout post error:", error);
         req.flash("error", "Có lỗi xảy ra, vui lòng thử lại!");
         res.redirect("/cart/checkout");
+    }
+};
+
+// [POST] /cart/apply-discount (AJAX)
+module.exports.applyDiscount = async (req, res) => {
+    try {
+        const { code, cartTotal } = req.body;
+        if (!code) {
+            return res.json({ code: 400, message: "Vui lòng nhập mã giảm giá!" });
+        }
+
+        const total = parseInt(cartTotal) || 0;
+        const result = await discountService.applyCode(code, total);
+
+        res.json({
+            code: 200,
+            message: "Áp dụng mã giảm giá thành công!",
+            discountCode: result.discount.code,
+            discountAmount: result.discountAmount,
+            finalTotal: result.finalTotal,
+            description: result.discount.description
+        });
+    } catch (error) {
+        let message = "Có lỗi xảy ra!";
+        if (error.message === "INVALID_CODE") message = "Mã giảm giá không hợp lệ hoặc đã hết hạn!";
+        else if (error.message === "USAGE_LIMIT_REACHED") message = "Mã giảm giá đã hết lượt sử dụng!";
+        else if (error.message.startsWith("MIN_ORDER:")) {
+            const min = parseInt(error.message.split(":")[1]);
+            message = `Đơn hàng tối thiểu ${min.toLocaleString("vi-VN")}₫ để áp dụng mã này!`;
+        }
+        res.json({ code: 400, message });
     }
 };
 

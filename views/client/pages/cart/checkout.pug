@@ -84,6 +84,9 @@ block main
                       span.tz-payment-name Thanh toán online qua VNPAY
                       span.tz-payment-desc Hỗ trợ ATM nội địa, Visa, MasterCard, JCB, QR Pay
 
+              //- Hidden input mã giảm giá
+              input#discountCodeInput(type="hidden" name="discountCode" value="")
+
               //- Ẩn nút đặt hàng nếu User đăng nhập mà CỐ TÌNH CHƯA có Address
               if (!clientUser || (clientUser && defaultAddress))
                 button.btn.btn-primary.w-100.mt-3(type="submit" class="tz-auto-ca8074")
@@ -112,6 +115,58 @@ block main
                       span.text-muted(class="tz-auto-766745") Số lượng: x#{item.quantity}
                       span.font-weight-bold(class="tz-auto-267f6d")= item.itemTotal.toLocaleString() + ' ₫'
 
+            //- Mã giảm giá
+            .mb-3.pb-3.border-bottom
+              label.font-weight-bold.mb-2
+                i.fas.fa-ticket-alt.mr-1
+                | Mã giảm giá
+              .input-group
+                input.form-control#discountInput(type="text" placeholder="Nhập mã giảm giá" style="text-transform:uppercase;")
+                .input-group-append
+                  button.btn.btn-outline-primary#applyDiscountBtn(type="button") Áp dụng
+              #discountMessage.mt-2(style="display:none;")
+              #discountInfo.mt-2(style="display:none;")
+                .d-flex.justify-content-between.text-success
+                  span Giảm giá:
+                  span#discountAmountText
+
             .d-flex.justify-content-between.align-items-end.pt-2
               span.font-weight-bold.text-dark Tổng thanh toán:
-              span.font-weight-bold(class="tz-auto-4c011e")= cartTotal.toLocaleString() + ' ₫'
+              span.font-weight-bold#finalTotalText(class="tz-auto-4c011e")= cartTotal.toLocaleString() + ' ₫'
+
+  script.
+    var originalTotal = #{cartTotal};
+    var applyBtn = document.getElementById("applyDiscountBtn");
+    if (applyBtn) {
+      applyBtn.addEventListener("click", function() {
+        var code = document.getElementById("discountInput").value.trim();
+        if (!code) { alert("Vui lòng nhập mã giảm giá!"); return; }
+
+        fetch("/cart/apply-discount", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code: code, cartTotal: originalTotal })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          var msgEl = document.getElementById("discountMessage");
+          var infoEl = document.getElementById("discountInfo");
+
+          if (data.code === 200) {
+            msgEl.style.display = "block";
+            msgEl.innerHTML = '<div class="alert alert-success py-1 mb-0"><small>' + data.message + (data.description ? " - " + data.description : "") + '</small></div>';
+            infoEl.style.display = "block";
+            document.getElementById("discountAmountText").textContent = "-" + data.discountAmount.toLocaleString("vi-VN") + " ₫";
+            document.getElementById("finalTotalText").textContent = data.finalTotal.toLocaleString("vi-VN") + " ₫";
+            document.getElementById("discountCodeInput").value = data.discountCode;
+          } else {
+            msgEl.style.display = "block";
+            msgEl.innerHTML = '<div class="alert alert-danger py-1 mb-0"><small>' + data.message + '</small></div>';
+            infoEl.style.display = "none";
+            document.getElementById("finalTotalText").textContent = originalTotal.toLocaleString("vi-VN") + " ₫";
+            document.getElementById("discountCodeInput").value = "";
+          }
+        })
+        .catch(function() { alert("Có lỗi xảy ra!"); });
+      });
+    }

@@ -100,14 +100,7 @@ module.exports.create = async (req, res) => {
 // [POST] /admin/articles/create
 module.exports.createPost = async (req, res) => {
     try {
-        if (req.file) {
-            req.body.thumbnail = req.file.path;
-        }
-
-        req.body.position = await articleService.autoPosition(req.body.position);
-
-        const article = new Article(req.body);
-        await article.save();
+        const article = await articleService.create(req.body, req.file);
 
         createLog(req, res, {
             action: "create",
@@ -157,26 +150,22 @@ module.exports.editPatch = async (req, res) => {
         const returnUrl = req.body.returnUrl;
         delete req.body.returnUrl;
 
-        if (req.file) {
-            req.body.thumbnail = req.file.path;
-        }
-
-        if (req.body.position) {
-            req.body.position = parseInt(req.body.position);
-        }
-
-        await Article.updateOne({ _id: req.params.id }, req.body);
+        const article = await articleService.update(req.params.id, req.body, req.file);
 
         createLog(req, res, {
             action: "edit",
             module: "articles",
-            description: `Chỉnh sửa bài viết: ${req.body.title}`
+            description: `Chỉnh sửa bài viết: ${article.title}`
         });
 
         req.flash("success", "Cập nhật bài viết thành công!");
         res.redirect(returnUrl || `${prefixAdmin}/articles`);
     } catch (error) {
         console.log(error);
+        if (error.message === "NOT_FOUND") {
+            req.flash("error", "Bài viết không tồn tại!");
+            return res.redirect(`${prefixAdmin}/articles`);
+        }
         req.flash("error", "Cập nhật thất bại!");
         res.redirect("back");
     }

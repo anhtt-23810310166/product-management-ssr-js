@@ -4,6 +4,7 @@ include ../../mixins/search.pug
 include ../../mixins/pagination.pug
 
 block main
+  div(data-crud=`${prefixAdmin}/reviews` data-entity-name="đánh giá" style="display:none")
   +pageHeader("Quản lý đánh giá", "Quản lý tất cả đánh giá sản phẩm trong hệ thống")
 
   //- Filter bar
@@ -26,23 +27,26 @@ block main
         thead
           tr
             th.col-stt STT
-            th Khách hàng
+            th.col-title Khách hàng
             th Sản phẩm
             th Đánh giá
             th Bình luận
             th Ngày
-            th Hành động
         tbody
           each review, index in reviews
             tr.animate-in(data-id=review._id)
               td.col-stt= pagination.skip + index + 1
-              td
-                .d-flex.align-items-center
-                  if review.userAvatar
-                    img(src=review.userAvatar alt=review.userName style="width:30px;height:30px;border-radius:50%;object-fit:cover;margin-right:8px")
-                  else
-                    i.fas.fa-user-circle.mr-2(style="font-size:24px;color:#ccc")
-                  span= review.userName
+              td.col-title
+                .product-title-cell
+                  .d-flex.align-items-center
+                    if review.userAvatar
+                      img(src=review.userAvatar alt=review.userName style="width:30px;height:30px;border-radius:50%;object-fit:cover;margin-right:8px")
+                    else
+                      i.fas.fa-user-circle.mr-2(style="font-size:24px;color:#ccc")
+                    span.product-name= review.userName
+                .product-hover-actions
+                  a.hover-action-link.text-primary.mr-2(href="javascript:void(0)" onclick=`showReplyModal('${review._id}')`) Phản hồi
+                  a.hover-action-link.hover-action-danger(href="javascript:void(0)" data-id=review._id) Xoá
               td
                 if productMap[review.productId]
                   a(href=`/products/detail/${productMap[review.productId].slug}` target="_blank")= productMap[review.productId].title
@@ -61,10 +65,14 @@ block main
                   span(style="max-width:250px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap")= review.comment
                 else
                   span.text-muted (Không có bình luận)
+                //- Hiển thị danh sách phản hồi
+                if review.replies && review.replies.length > 0
+                  .replies-list.mt-2.pl-2(style="border-left: 2px solid #ddd; font-size: 13px;")
+                    each reply in review.replies
+                      .reply-item.mb-1
+                        strong.text-primary #{reply.adminFullName}: 
+                        span.text-muted= reply.content
               td= review.createdAt.toLocaleDateString('vi-VN')
-              td
-                button.btn.btn-sm.btn-outline-danger(onclick=`deleteReview('${review._id}')`)
-                  i.fas.fa-trash-alt
     else
       .admin-empty-state
         i.fas.fa-star-half-alt
@@ -74,21 +82,81 @@ block main
   //- Pagination
   +pagination(pagination)
 
-  script.
-    function deleteReview(id) {
-      if (!confirm('Bạn có chắc muốn xoá đánh giá này?')) return;
+  //- Modal Phản Hồi
+  #replyModal.modal.fade(tabindex="-1" role="dialog")
+    .modal-dialog(role="document")
+      .modal-content
+        form#replyForm
+          .modal-header
+            h5.modal-title Phản hồi đánh giá
+            button.close(type="button" data-dismiss="modal" aria-label="Close")
+              span(aria-hidden="true") &times;
+          .modal-body
+            input#replyReviewId(type="hidden" name="reviewId")
+            .form-group
+              label.form-label(for="replyContent") Nội dung phản hồi:
+              textarea#replyContent.form-control(name="content" rows="3" required)
+          .modal-footer
+            button.btn.btn-secondary(type="button" data-dismiss="modal") Hủy
+            button.btn.btn-primary(type="submit") Gửi phản hồi
 
-      fetch('#{prefixAdmin}/reviews/delete/' + id, {
-        method: 'DELETE'
-      })
-      .then(function(res) { return res.json(); })
-      .then(function(data) {
-        if (data.code === 200) {
-          var row = document.querySelector('tr[data-id="' + id + '"]');
-          if (row) row.remove();
-        } else {
-          alert(data.message);
-        }
-      })
-      .catch(function() { alert('Có lỗi xảy ra!'); });
+block append scripts
+  script(src="/admin/js/admin-crud.js")
+  script.
+    function showReplyModal(reviewId) {
+        document.getElementById('replyReviewId').value = reviewId;
+        document.getElementById('replyContent').value = '';
+        $('#replyModal').modal('show');
     }
+
+    document.getElementById('replyForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const reviewId = document.getElementById('replyReviewId').value;
+        const content = document.getElementById('replyContent').value;
+        const submitBtn = this.querySelector('button[type="submit"]');
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Đang gửi...';
+
+        fetch(`#{prefixAdmin}/reviews/reply/${reviewId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ content: content })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.code === 200) {
+                $('#replyModal').modal('hide');
+                
+                // Cập nhật DOM
+                const tr = document.querySelector(`tr[data-id="${reviewId}"]`);
+                if (tr) {
+                    const commentTd = tr.querySelectorAll('td')[4];
+                    let repliesList = commentTd.querySelector('.replies-list');
+                    if (!repliesList) {
+                        repliesList = document.createElement('div');
+                        repliesList.className = 'replies-list mt-2 pl-2';
+                        repliesList.style.borderLeft = '2px solid #ddd';
+                        repliesList.style.fontSize = '13px';
+                        commentTd.appendChild(repliesList);
+                    }
+                    const newReply = document.createElement('div');
+                    newReply.className = 'reply-item mb-1';
+                    newReply.innerHTML = `<strong class="text-primary">${data.reply.adminFullName}: </strong><span class="text-muted">${data.reply.content}</span>`;
+                    repliesList.appendChild(newReply);
+                }
+                
+                // alert alert-success có thể dùng thay thế
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Có lỗi xảy ra khi gửi phản hồi!");
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Gửi phản hồi';
+        });
+    });

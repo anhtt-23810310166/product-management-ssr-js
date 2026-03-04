@@ -48,6 +48,17 @@ const systemConfig = (app) => {
                 { label: "Đổi trạng thái", action: "change-status" }
             ]
         },
+        {
+            label: "Mã giảm giá",
+            name: "discounts",
+            permissions: [
+                { label: "Xem", action: "view" },
+                { label: "Thêm mới", action: "create" },
+                { label: "Chỉnh sửa", action: "edit" },
+                { label: "Xóa", action: "delete" },
+                { label: "Đổi trạng thái", action: "change-status" }
+            ]
+        },
 
         {
             label: "Bài viết",

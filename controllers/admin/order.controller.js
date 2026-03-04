@@ -6,6 +6,8 @@ const sortHelper = require("../../helpers/sort");
 const paginationHelper = require("../../helpers/pagination");
 const systemConfig = require("../../config/system");
 const prefixAdmin = systemConfig.prefixAdmin;
+const orderService = require("../../services/order.service");
+const createLog = require("../../helpers/activityLog");
 
 // Map trạng thái đơn hàng
 const STATUS_MAP = {
@@ -136,18 +138,24 @@ module.exports.changeStatus = async (req, res) => {
         const validStatuses = ["pending", "confirmed", "shipping", "delivered", "cancelled"];
 
         if (!validStatuses.includes(status)) {
-            req.flash("error", "Trạng thái không hợp lệ!");
-            return res.redirect("back");
+            return res.json({ code: 400, message: "Trạng thái không hợp lệ!" });
         }
 
-        await Order.updateOne({ _id: id }, { status });
+        const { modified } = await orderService.changeStatus(id, status);
 
-        req.flash("success", `Đã cập nhật trạng thái đơn hàng thành "${STATUS_MAP[status].label}"!`);
-        res.redirect("back");
+        if (modified) {
+            createLog(req, res, {
+                action: "change-status",
+                module: "orders",
+                description: `Đổi trạng thái đơn hàng (ID: ${id}) sang "${STATUS_MAP[status].label}"`
+            });
+            res.json({ code: 200, message: `Đã cập nhật trạng thái đơn hàng thành "${STATUS_MAP[status].label}"!` });
+        } else {
+            res.json({ code: 200, message: "Không có thay đổi nào!", noChange: true });
+        }
     } catch (error) {
         console.log("Change order status error:", error);
-        req.flash("error", "Lỗi cập nhật trạng thái!");
-        res.redirect("back");
+        res.json({ code: 400, message: "Lỗi cập nhật trạng thái!" });
     }
 };
 
@@ -155,13 +163,20 @@ module.exports.changeStatus = async (req, res) => {
 module.exports.deleteOrder = async (req, res) => {
     try {
         const id = req.params.id;
-        await Order.updateOne({ _id: id }, { deleted: true, deletedAt: new Date() });
+        const { modified } = await orderService.softDelete(id);
 
-        req.flash("success", "Đã xóa đơn hàng!");
-        res.redirect("back");
+        if (modified) {
+            createLog(req, res, {
+                action: "delete",
+                module: "orders",
+                description: `Xóa đơn hàng (ID: ${id})`
+            });
+            res.json({ code: 200, message: "Đã xóa đơn hàng!" });
+        } else {
+            res.json({ code: 200, message: "Không có thay đổi nào!", noChange: true });
+        }
     } catch (error) {
         console.log("Delete order error:", error);
-        req.flash("error", "Lỗi xóa đơn hàng!");
-        res.redirect("back");
+        res.json({ code: 400, message: "Lỗi xóa đơn hàng!" });
     }
 };

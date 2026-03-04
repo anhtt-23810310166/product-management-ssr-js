@@ -57,18 +57,12 @@ module.exports.create = async (req, res) => {
 // [POST] /admin/brands/create
 module.exports.createPost = async (req, res) => {
     try {
-        req.body.position = await brandService.autoPosition(req.body.position);
-
-        if (req.file) {
-            req.body.logo = req.file.path;
-        }
-
-        await brandService.Model.create(req.body);
+        const brand = await brandService.create(req.body, req.file);
 
         createLog(req, res, {
             action: "create",
             module: "brands",
-            description: `Thêm thương hiệu: ${req.body.name}`
+            description: `Thêm thương hiệu: ${brand.name}`
         });
 
         req.flash("success", "Tạo thương hiệu thành công!");
@@ -113,26 +107,22 @@ module.exports.editPatch = async (req, res) => {
         const returnUrl = req.body.returnUrl;
         delete req.body.returnUrl;
 
-        if (req.body.position !== undefined && req.body.position !== "") {
-            req.body.position = parseInt(req.body.position);
-        }
-
-        if (req.file) {
-            req.body.logo = req.file.path;
-        }
-
-        await brandService.Model.updateOne({ _id: req.params.id }, req.body);
+        const brand = await brandService.update(req.params.id, req.body, req.file);
 
         createLog(req, res, {
             action: "edit",
             module: "brands",
-            description: `Chỉnh sửa thương hiệu: ${req.body.name}`
+            description: `Chỉnh sửa thương hiệu: ${brand.name}`
         });
 
         req.flash("success", "Cập nhật thương hiệu thành công!");
         res.redirect(returnUrl || `${prefixAdmin}/brands`);
     } catch (error) {
         console.log(error);
+        if (error.message === "NOT_FOUND") {
+            req.flash("error", "Không tìm thấy thương hiệu!");
+            return res.redirect(`${prefixAdmin}/brands`);
+        }
         req.flash("error", "Có lỗi xảy ra!");
         res.redirect(`${prefixAdmin}/brands`);
     }

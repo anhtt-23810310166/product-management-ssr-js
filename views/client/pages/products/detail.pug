@@ -228,6 +228,18 @@ block main
                       span.tz-review-date= review.createdAt.toLocaleDateString('vi-VN')
                 if review.comment
                   .tz-review-comment= review.comment
+                  
+                //- Hiển thị phản hồi từ Quản trị viên
+                if review.replies && review.replies.length > 0
+                  .mt-3.ml-4
+                    each reply in review.replies
+                      .mb-2
+                        .d-flex.align-items-center.mb-1
+                          .rounded-circle.bg-primary.text-white.d-flex.align-items-center.justify-content-center.mr-2(style="width: 25px; height: 25px;")
+                            i.fas.fa-user-shield(style="font-size: 11px;")
+                          strong.text-primary(style="font-size: 0.95rem;") #{reply.adminFullName || 'Admin'}
+                          span.text-muted.ml-2(style="font-size: 0.85rem;")= new Date(reply.createdAt).toLocaleDateString('vi-VN')
+                        .text-dark(style="font-size: 0.95rem; margin-left: 33px;")= reply.content
         else
           .tz-review-empty
             i.fas.fa-comments

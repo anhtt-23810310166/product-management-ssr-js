@@ -1,5 +1,6 @@
 const FlashSale = require("../../models/flash-sale.model");
 const Product = require("../../models/product.model");
+const flashSaleService = require("../../services/flash-sale.service");
 const systemConfig = require("../../config/system");
 const prefixAdmin = systemConfig.prefixAdmin;
 const createLog = require("../../helpers/activityLog");
@@ -7,9 +8,9 @@ const createLog = require("../../helpers/activityLog");
 // [GET] /admin/flash-sale
 module.exports.index = async (req, res) => {
     try {
-        const flashSales = await FlashSale.find({ deleted: false })
-            .sort({ createdAt: -1 });
-
+        const result = await flashSaleService.list(req.query);
+        const flashSales = result.items;
+        
         const now = new Date();
 
         const items = flashSales.map(sale => {
@@ -32,7 +33,11 @@ module.exports.index = async (req, res) => {
                 { title: "Flash Sale" },
                 { title: "Danh sách" }
             ],
-            flashSales: items
+            flashSales: items,
+            filterStatus: result.filterStatus,
+            keyword: result.keyword,
+            sortOptions: result.sortOptions,
+            pagination: result.pagination
         });
     } catch (error) {
         console.error("FLASH SALE INDEX ERROR:", error);
@@ -68,38 +73,12 @@ module.exports.create = async (req, res) => {
 // [POST] /admin/flash-sale/create
 module.exports.createPost = async (req, res) => {
     try {
-        const { title, startTime, endTime } = req.body;
-
-        // Parse products from form
-        const products = [];
-        if (req.body.productIds) {
-            const ids = Array.isArray(req.body.productIds) ? req.body.productIds : [req.body.productIds];
-            const discounts = Array.isArray(req.body.productDiscounts) ? req.body.productDiscounts : [req.body.productDiscounts];
-            const stocks = Array.isArray(req.body.productStocks) ? req.body.productStocks : [req.body.productStocks];
-
-            for (let i = 0; i < ids.length; i++) {
-                products.push({
-                    product_id: ids[i],
-                    discountPercentage: parseInt(discounts[i]) || 0,
-                    stock: parseInt(stocks[i]) || 0,
-                    sold: 0
-                });
-            }
-        }
-
-        const flashSale = new FlashSale({
-            title,
-            startTime: new Date(startTime),
-            endTime: new Date(endTime),
-            products,
-            status: req.body.status || "active"
-        });
-        await flashSale.save();
+        const flashSale = await flashSaleService.create(req.body);
 
         createLog(req, res, {
             action: "create",
             module: "flash-sale",
-            description: `Tạo Flash Sale: ${title}`
+            description: `Tạo Flash Sale: ${flashSale.title}`
         });
 
         req.flash("success", "Tạo Flash Sale thành công!");
@@ -114,10 +93,7 @@ module.exports.createPost = async (req, res) => {
 // [GET] /admin/flash-sale/edit/:id
 module.exports.edit = async (req, res) => {
     try {
-        const flashSale = await FlashSale.findOne({
-            _id: req.params.id,
-            deleted: false
-        });
+        const flashSale = await flashSaleService.findById(req.params.id);
 
         if (!flashSale) {
             req.flash("error", "Flash Sale không tồn tại!");
@@ -166,42 +142,7 @@ module.exports.edit = async (req, res) => {
 // [PATCH] /admin/flash-sale/edit/:id
 module.exports.editPatch = async (req, res) => {
     try {
-        const flashSale = await FlashSale.findOne({
-            _id: req.params.id,
-            deleted: false
-        });
-
-        if (!flashSale) {
-            req.flash("error", "Flash Sale không tồn tại!");
-            return res.redirect(`${prefixAdmin}/flash-sale`);
-        }
-
-        flashSale.title = req.body.title;
-        flashSale.startTime = new Date(req.body.startTime);
-        flashSale.endTime = new Date(req.body.endTime);
-        flashSale.status = req.body.status || "active";
-
-        // Re-parse products
-        const products = [];
-        if (req.body.productIds) {
-            const ids = Array.isArray(req.body.productIds) ? req.body.productIds : [req.body.productIds];
-            const discounts = Array.isArray(req.body.productDiscounts) ? req.body.productDiscounts : [req.body.productDiscounts];
-            const stocks = Array.isArray(req.body.productStocks) ? req.body.productStocks : [req.body.productStocks];
-
-            for (let i = 0; i < ids.length; i++) {
-                // Keep existing sold count if product was already in the sale
-                const existing = flashSale.products.find(p => p.product_id.toString() === ids[i]);
-                products.push({
-                    product_id: ids[i],
-                    discountPercentage: parseInt(discounts[i]) || 0,
-                    stock: parseInt(stocks[i]) || 0,
-                    sold: existing ? existing.sold : 0
-                });
-            }
-        }
-        flashSale.products = products;
-
-        await flashSale.save();
+        const flashSale = await flashSaleService.update(req.params.id, req.body);
 
         createLog(req, res, {
             action: "edit",
@@ -212,8 +153,12 @@ module.exports.editPatch = async (req, res) => {
         req.flash("success", "Cập nhật Flash Sale thành công!");
         res.redirect(`${prefixAdmin}/flash-sale`);
     } catch (error) {
-        console.error("FLASH SALE EDIT PATCH ERROR:", error);
-        req.flash("error", "Có lỗi xảy ra!");
+        if (error.message === "NOT_FOUND") {
+            req.flash("error", "Flash Sale không tồn tại!");
+        } else {
+            console.error("FLASH SALE EDIT PATCH ERROR:", error);
+            req.flash("error", "Có lỗi xảy ra!");
+        }
         res.redirect("back");
     }
 }
@@ -221,13 +166,12 @@ module.exports.editPatch = async (req, res) => {
 // [PATCH] /admin/flash-sale/change-status/:status/:id
 module.exports.changeStatus = async (req, res) => {
     try {
-        const { status, id } = req.params;
-        await FlashSale.updateOne({ _id: id }, { status });
+        await flashSaleService.changeStatus(req.params.id, req.params.status);
 
         createLog(req, res, {
-            action: "change-status",
+            action: "edit",
             module: "flash-sale",
-            description: `Đổi trạng thái Flash Sale sang ${status === "active" ? "hoạt động" : "dừng hoạt động"}`
+            description: `Đổi trạng thái Flash Sale (ID: ${req.params.id}) sang ${req.params.status}`
         });
 
         res.json({ code: 200, message: "Cập nhật trạng thái thành công!" });
@@ -239,10 +183,7 @@ module.exports.changeStatus = async (req, res) => {
 // [DELETE] /admin/flash-sale/delete/:id
 module.exports.deleteFlashSale = async (req, res) => {
     try {
-        await FlashSale.updateOne(
-            { _id: req.params.id },
-            { deleted: true, deletedAt: new Date() }
-        );
+        await flashSaleService.softDelete(req.params.id);
 
         createLog(req, res, {
             action: "delete",

@@ -6,6 +6,7 @@ include ../../mixins/pagination.pug
 include ../../mixins/batch-actions.pug
 
 block main
+  div(data-crud=`${prefixAdmin}/roles` data-entity-name="nhóm quyền" style="display:none")
   +pageHeader("Danh sách nhóm quyền", "Quản lý nhóm quyền hệ thống")
     if userPermissions && userPermissions.includes("roles_create")
       a.btn.btn-add-product(href=`${prefixAdmin}/roles/create`)
@@ -53,7 +54,7 @@ block main
                     a.hover-action-link.hover-action-edit(href=`${prefixAdmin}/roles/edit/${role._id}`) Sửa
                   a.hover-action-link.hover-action-detail(href=`${prefixAdmin}/roles/detail/${role._id}`) Chi tiết
                   if userPermissions && userPermissions.includes("roles_delete")
-                    a.hover-action-link.hover-action-danger.btn-delete-role(href="javascript:void(0)" data-id=role._id) Xóa
+                    a.hover-action-link.hover-action-danger(href="javascript:void(0)" data-id=role._id) Xoá
               td!= role.description
     else
       .admin-empty-state
@@ -69,5 +70,4 @@ block main
   +pagination(pagination)
 
 block append scripts
-  script(src="/admin/js/role.js")
-
+  script(src="/admin/js/admin-crud.js")
