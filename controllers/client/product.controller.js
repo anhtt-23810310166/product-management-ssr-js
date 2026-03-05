@@ -4,6 +4,7 @@ const Brand = require("../../models/brand.model");
 const Review = require("../../models/review.model");
 const Order = require("../../models/order.model");
 const FlashSale = require("../../models/flash-sale.model");
+const getFrequentlyBought = require("../../helpers/frequently-bought");
 
 // Helper: lấy tất cả ID con cháu của 1 category
 const getDescendantIds = async (parentId) => {
@@ -308,6 +309,9 @@ module.exports.detail = async (req, res) => {
             .limit(4)
             .lean();
 
+        // Sản phẩm thường mua kèm (phân tích từ lịch sử đơn hàng)
+        const frequentlyBought = await getFrequentlyBought(product._id, 4);
+
         res.render("client/pages/products/detail", {
             title: product.title,
             product: product,
@@ -319,7 +323,8 @@ module.exports.detail = async (req, res) => {
             hasReviewed: hasReviewed,
             soldCount: soldCount,
             flashDiscount: flashDiscount,
-            relatedProducts: relatedProducts
+            relatedProducts: relatedProducts,
+            frequentlyBought: frequentlyBought
         });
     } catch (error) {
         res.redirect("/products");

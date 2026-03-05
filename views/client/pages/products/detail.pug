@@ -149,6 +149,14 @@ block main
           h5.mb-0.font-weight-bold.tz-card-title-md Đặc điểm nổi bật
         .card-body.p-3
           .tz-product-desc.content-html.tz-product-desc-content!= product.description
+    //- Frequently Bought Together Section
+    if frequentlyBought && frequentlyBought.length > 0
+      .mb-5
+        h5.font-weight-bold.mb-3 Khách hàng cũng thường mua
+        .row
+          each item in frequentlyBought
+            .col-lg-3.col-md-4.col-6.mb-3
+              +productCard(item)
 
     //- Review Section
     .card.border-0.shadow-sm.mb-5.tz-review-section
@@ -319,9 +327,7 @@ block main
   //- Sản phẩm liên quan
   if relatedProducts && relatedProducts.length > 0
     .container.mb-4
-      h5.font-weight-bold.mb-3
-        i.fas.fa-th-large.mr-2
-        | Sản phẩm liên quan
+      h5.font-weight-bold.mb-3 Sản phẩm liên quan
       .row
         each rp in relatedProducts
           .col-lg-3.col-md-4.col-6.mb-3
@@ -329,9 +335,7 @@ block main
 
   //- Sản phẩm đã xem gần đây
   .container.mb-5#recentlyViewedSection(style="display:none;")
-    h5.font-weight-bold.mb-3
-      i.fas.fa-history.mr-2
-      | Đã xem gần đây
+    h5.font-weight-bold.mb-3 Đã xem gần đây
     .row#recentlyViewedList
 
   script.
