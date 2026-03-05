@@ -345,6 +345,15 @@ block main
       });
     });
 
+    // Tự động chọn biến thể đầu tiên khi tải trang
+    document.addEventListener("DOMContentLoaded", function() {
+      var firstVariantRadio = document.querySelector('.tz-variant-radio');
+      if (firstVariantRadio) {
+        firstVariantRadio.checked = true;
+        firstVariantRadio.dispatchEvent(new Event('change'));
+      }
+    });
+
     // Star rating selection
     document.querySelectorAll('.tz-star-input').forEach(function(star) {
       star.addEventListener('click', function() {
