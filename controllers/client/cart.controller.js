@@ -10,6 +10,7 @@ const {
 const vnpayHelper = require("../../helpers/vnpay");
 const discountService = require("../../services/discount.service");
 const { calculateShippingFee, getProvinceList } = require("../../helpers/shipping");
+const loyalty = require("../../helpers/loyalty");
 
 // Helper: Lấy cartItems và cartTotal từ Cart document
 const getCartDetails = async (cart) => {
@@ -296,12 +297,25 @@ module.exports.checkout = async (req, res) => {
             }
         }
 
+        // Lấy điểm loyalty nếu đăng nhập
+        let userPoints = 0;
+        let maxRedeemPoints = 0;
+        let redeemValue = 0;
+        if (res.locals.clientUser) {
+            userPoints = await loyalty.getPoints(res.locals.clientUser.id);
+            maxRedeemPoints = loyalty.calcMaxRedeemPoints(cartTotal, userPoints);
+            redeemValue = loyalty.REDEEM_VALUE;
+        }
+
         res.render("client/pages/cart/checkout", {
             title: "Thanh toán",
             cartItems,
             cartTotal,
             defaultAddress,
-            req: req
+            req: req,
+            userPoints,
+            maxRedeemPoints,
+            redeemValue
         });
     } catch (error) {
         console.log("Checkout error:", error);
@@ -396,6 +410,21 @@ module.exports.checkoutPost = async (req, res) => {
 
         const finalAmount = totalAmount - discountAmount;
 
+        // Xử lý điểm loyalty (nếu có)
+        let loyaltyPointsUsed = 0;
+        let loyaltyDiscount = 0;
+        if (res.locals.clientUser && req.body.redeemPoints) {
+            const requestedPoints = parseInt(req.body.redeemPoints) || 0;
+            if (requestedPoints > 0) {
+                const userPoints = await loyalty.getPoints(res.locals.clientUser.id);
+                const maxRedeem = loyalty.calcMaxRedeemPoints(finalAmount, userPoints);
+                loyaltyPointsUsed = Math.min(requestedPoints, maxRedeem);
+                loyaltyDiscount = loyalty.calcRedeemAmount(loyaltyPointsUsed);
+            }
+        }
+
+        const grandTotal = Math.max(0, finalAmount - loyaltyDiscount);
+
         // Tạo đơn hàng
         const order = new Order({
             userId: res.locals.clientUser ? res.locals.clientUser.id : "",
@@ -404,13 +433,22 @@ module.exports.checkoutPost = async (req, res) => {
             customerAddress,
             customerNote: customerNote || "",
             items,
-            totalAmount: finalAmount,
+            totalAmount: grandTotal,
             discountCode: discountCode,
-            discountAmount: discountAmount,
+            discountAmount: discountAmount + loyaltyDiscount,
             paymentMethod: paymentMethod,
             paymentStatus: "unpaid"
         });
         await order.save();
+
+        // Trừ điểm + cộng điểm mới
+        if (res.locals.clientUser) {
+            if (loyaltyPointsUsed > 0) {
+                await loyalty.redeemPoints(res.locals.clientUser.id, loyaltyPointsUsed);
+            }
+            // Cộng điểm từ giá trị đơn
+            await loyalty.addPoints(res.locals.clientUser.id, grandTotal);
+        }
 
         // Xóa giỏ hàng trong DB (chỉ xóa items, giữ lại Cart)
         await Cart.updateOne(

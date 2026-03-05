@@ -35,6 +35,10 @@ const userSchema = new mongoose.Schema(
         },
         otpPassword: String,
         otpPasswordTimeExpire: Date,
+        loyaltyPoints: {
+            type: Number,
+            default: 0
+        },
         wishlist: {
             type: [String],
             default: []

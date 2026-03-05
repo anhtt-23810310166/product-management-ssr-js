@@ -139,6 +139,26 @@ block main
                   span Giảm giá:
                   span#discountAmountText
 
+            //- Điểm tích lũy
+            if clientUser && userPoints > 0
+              .mb-3.pb-3.border-bottom
+                .d-flex.justify-content-between.align-items-center.mb-2
+                  span.text-muted
+                    i.fas.fa-coins.text-warning.mr-1
+                    | Điểm tích lũy:
+                  span.font-weight-bold.text-warning #{userPoints} điểm
+                if maxRedeemPoints > 0
+                  .custom-control.custom-checkbox.mb-2
+                    input.custom-control-input#usePointsCheck(type="checkbox" onchange="togglePointsRedeem()")
+                    label.custom-control-label(for="usePointsCheck") Dùng #{maxRedeemPoints} điểm (giảm #{(maxRedeemPoints * redeemValue).toLocaleString()}₫)
+                  input(type="hidden" name="redeemPoints" id="redeemPointsInput" value="0")
+                  #loyaltyDiscountInfo.mt-1(style="display:none;")
+                    .d-flex.justify-content-between.text-warning
+                      span Giảm từ điểm:
+                      span#loyaltyDiscountText
+                else
+                  small.text-muted Chưa đủ điểm để sử dụng cho đơn này
+
             .d-flex.justify-content-between.align-items-end.pt-2
               span.font-weight-bold.text-dark Tổng thanh toán:
               span.font-weight-bold#finalTotalText(class="tz-auto-4c011e")= cartTotal.toLocaleString() + ' ₫'
@@ -146,6 +166,9 @@ block main
   script.
     var originalTotal = #{cartTotal};
     var shippingFee = 0;
+    var loyaltyDiscount = 0;
+    var maxRedeemPoints = #{maxRedeemPoints || 0};
+    var redeemValue = #{redeemValue || 0};
 
     // === Tự tính phí ship từ địa chỉ nhận hàng ===
     function calcShippingFromAddress(addressStr) {
@@ -162,13 +185,32 @@ block main
         });
     }
 
+    // === Dùng điểm tích lũy ===
+    function togglePointsRedeem() {
+      var cb = document.getElementById('usePointsCheck');
+      var input = document.getElementById('redeemPointsInput');
+      var info = document.getElementById('loyaltyDiscountInfo');
+      var text = document.getElementById('loyaltyDiscountText');
+      if (cb && cb.checked) {
+        input.value = maxRedeemPoints;
+        loyaltyDiscount = maxRedeemPoints * redeemValue;
+        if (text) text.textContent = '-' + loyaltyDiscount.toLocaleString('vi-VN') + ' ₫';
+        if (info) info.style.display = 'block';
+      } else {
+        input.value = 0;
+        loyaltyDiscount = 0;
+        if (info) info.style.display = 'none';
+      }
+      updateFinalTotal();
+    }
+
     function updateFinalTotal() {
       var discountEl = document.getElementById('discountAmountText');
       var discountAmount = 0;
       if (discountEl && discountEl.textContent) {
         discountAmount = parseInt(discountEl.textContent.replace(/[^0-9]/g, '')) || 0;
       }
-      var total = originalTotal + shippingFee - discountAmount;
+      var total = originalTotal + shippingFee - discountAmount - loyaltyDiscount;
       if (total < 0) total = 0;
       document.getElementById('finalTotalText').textContent = total.toLocaleString('vi-VN') + ' ₫';
     }

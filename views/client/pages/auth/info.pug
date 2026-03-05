@@ -23,6 +23,14 @@ block main
           .tz-card-body
             .tz-profile-subtitle Quản lý thông tin hồ sơ để bảo mật tài khoản
 
+            //- Điểm tích lũy
+            .d-flex.align-items-center.mb-3.p-3.rounded(style="background: linear-gradient(135deg, #fff9e6 0%, #fff3cc 100%); border: 1px solid #ffd700;")
+              i.fas.fa-coins.mr-2(style="color: #f5a623; font-size: 20px;")
+              div
+                span.font-weight-bold(style="color: #b8860b;") #{clientUser.loyaltyPoints || 0} điểm tích lũy
+                br
+                small.text-muted Mỗi 100.000₫ = 1 điểm | 1 điểm = 10.000₫ giảm giá
+
             form(action="/user/info" method="POST" enctype="multipart/form-data")
               .tz-profile-layout
                 //- Form Fields
