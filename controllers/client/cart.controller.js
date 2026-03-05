@@ -287,7 +287,7 @@ module.exports.update = async (req, res) => {
         const itemTotal = unitPrice * quantity;
 
         // Lấy cart mới từ DB để tính tổng chính xác
-        const updatedCart = await Cart.findById(cart._id);
+        const updatedCart = await Cart.findById(req.cart._id);
         const productIds = updatedCart.items.map(item => item.productId);
         const products = await Product.find({ _id: { $in: productIds }, deleted: false });
         const cartTotal = calculateCartTotal(updatedCart.items, products);

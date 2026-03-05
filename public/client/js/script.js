@@ -150,7 +150,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Format number with dots (Vietnamese style)
   function formatPrice(num) {
-    return num.toLocaleString() + " ₫";
+    if (!num) return "0 ₫";
+    return parseInt(num).toLocaleString('vi-VN') + " ₫";
   }
 
   // Update badge on header
@@ -160,6 +161,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Update quantity via AJAX
+
   document.querySelectorAll(".cart-wrapper .quantity-input").forEach(function (input) {
     input.addEventListener("change", function () {
       var productId = this.dataset.productId;

@@ -21,7 +21,7 @@ block main
                       th.border-0.text-center(scope="col")
                   tbody
                     each item in cartItems
-                      tr.cart-item(data-product-id=item.product._id data-item-id=item.itemId)
+                      tr.cart-item.bg-white.shadow-sm.rounded.mb-3.d-table-row(data-product-id=item.product._id data-item-id=item.itemId)
                         td
                           .d-flex.align-items-center
                             a.mr-3(href=`/products/detail/${item.product.slug}`)
