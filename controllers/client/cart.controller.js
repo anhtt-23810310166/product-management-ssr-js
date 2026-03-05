@@ -168,6 +168,13 @@ module.exports.addPost = async (req, res) => {
         }
 
         if (req.body.buyNow === "true") {
+            const updatedCartState = await Cart.findById(cart._id);
+            const addedItem = updatedCartState.items.find(item => 
+                 item.productId === productId && (item.variantId || "") === variantId
+            );
+            if (addedItem) {
+                 return res.redirect(`/cart/checkout?itemId=${addedItem._id}`);
+            }
             return res.redirect("/cart/checkout");
         }
 
@@ -345,7 +352,16 @@ module.exports.checkout = async (req, res) => {
             return res.redirect("/cart");
         }
 
-        const { cartItems, cartTotal } = await getCartDetails(cart);
+        let cartToProcess = cart;
+        const buyNowItemId = req.query.itemId;
+        if (buyNowItemId) {
+            const specificItem = cart.items.find(item => item._id.toString() === buyNowItemId);
+            if (specificItem) {
+                cartToProcess = { ...cart.toObject(), items: [specificItem] };
+            }
+        }
+
+        const { cartItems, cartTotal } = await getCartDetails(cartToProcess);
 
         let defaultAddress = null;
         if (res.locals.clientUser && res.locals.clientUser.addresses) {
@@ -375,7 +391,8 @@ module.exports.checkout = async (req, res) => {
             req: req,
             userPoints,
             maxRedeemPoints,
-            redeemValue
+            redeemValue,
+            buyNowItemId // Pass to view to include in POST form
         });
     } catch (error) {
         console.log("Checkout error:", error);
@@ -393,15 +410,29 @@ module.exports.checkoutPost = async (req, res) => {
             return res.redirect("/cart");
         }
 
-        const { customerName, customerPhone, customerAddress, customerNote } = req.body;
+        const { customerName, customerPhone, customerAddress, customerNote, buyNowItemId } = req.body;
 
         if (!customerName || !customerPhone || !customerAddress) {
             req.flash("error", "Vui lòng điền đầy đủ thông tin!");
-            return res.redirect("/cart/checkout");
+            const redirectUrl = buyNowItemId ? `/cart/checkout?itemId=${buyNowItemId}` : "/cart/checkout";
+            return res.redirect(redirectUrl);
+        }
+
+        let itemsToCheckout = cart.items;
+        if (buyNowItemId) {
+            const specificItem = cart.items.find(item => item._id.toString() === buyNowItemId);
+            if (specificItem) {
+                itemsToCheckout = [specificItem];
+            }
+        }
+
+        if (itemsToCheckout.length === 0) {
+            req.flash("error", "Không có sản phẩm để thanh toán!");
+            return res.redirect("/cart");
         }
 
         // Lấy thông tin sản phẩm
-        const productIds = cart.items.map(item => item.productId);
+        const productIds = itemsToCheckout.map(item => item.productId);
         const products = await Product.find({
             _id: { $in: productIds },
             deleted: false
@@ -410,7 +441,7 @@ module.exports.checkoutPost = async (req, res) => {
         const items = [];
         let totalAmount = 0;
 
-        for (const cartItem of cart.items) {
+        for (const cartItem of itemsToCheckout) {
             const product = products.find(p => p.id === cartItem.productId);
             if (product) {
                 let variant = null;
@@ -525,10 +556,10 @@ module.exports.checkoutPost = async (req, res) => {
             await loyalty.addPoints(res.locals.clientUser.id, grandTotal);
         }
 
-        // Xóa giỏ hàng trong DB (chỉ xóa items, giữ lại Cart)
+        // Xóa các sản phẩm đã thanh toán khỏi giỏ hàng trong DB
         await Cart.updateOne(
             { _id: cart._id },
-            { $set: { items: [] } }
+            { $pull: { items: { _id: { $in: itemsToCheckout.map(item => item._id) } } } }
         );
 
         // Xử lý VNPay redirect hoặc render COD success

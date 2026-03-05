@@ -86,6 +86,9 @@ block main
 
               //- Hidden input mã giảm giá
               input#discountCodeInput(type="hidden" name="discountCode" value="")
+              
+              if buyNowItemId
+                input(type="hidden" name="buyNowItemId" value=buyNowItemId)
 
               //- Ẩn nút đặt hàng nếu User đăng nhập mà CỐ TÌNH CHƯA có Address
               if (!clientUser || (clientUser && defaultAddress))
