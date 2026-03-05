@@ -9,6 +9,9 @@ router.post("/add/:productId", controller.addPost);
 router.patch("/update/:productId", controller.update);
 router.delete("/remove/:productId", controller.remove);
 
+// Áp dụng mã giảm giá (AJAX)
+router.post("/apply-discount", controller.applyDiscount);
+
 // Tính phí ship theo tỉnh/thành
 router.get("/shipping/fee", controller.getShippingFee);
 router.get("/provinces", controller.getProvinces);
