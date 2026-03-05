@@ -6,6 +6,7 @@ const createTree = require("../../helpers/createTree");
 const systemConfig = require("../../config/system");
 const prefixAdmin = systemConfig.prefixAdmin;
 const createLog = require("../../helpers/activityLog");
+const importExport = require("../../helpers/importExport");
 
 // [GET] /admin/products
 module.exports.index = async (req, res) => {
@@ -238,5 +239,106 @@ module.exports.deleteProduct = async (req, res) => {
         }
     } catch (error) {
         res.json({ code: 400, message: "Có lỗi xảy ra!" });
+    }
+}
+
+// [GET] /admin/products/export
+module.exports.exportExcel = async (req, res) => {
+    try {
+        const result = await productService.list(req.query);
+        const products = result.items;
+
+        const columns = ['ID', 'Tên sản phẩm', 'Danh mục', 'Giá', '% Giảm', 'Giá mới', 'Tồn kho', 'Đã bán', 'Trạng thái', 'Vị trí', 'Nổi bật'];
+        
+        const data = products.map(p => ({
+            id: p.id,
+            title: p.title,
+            category: p.product_category_id ? p.product_category_id.title : '',
+            price: p.price,
+            discountPercentage: p.discountPercentage,
+            newPrice: p.newPrice,
+            stock: p.stock,
+            sold: p.sold || 0,
+            status: p.status === "active" ? "Hoạt động" : "Dừng hoạt động",
+            position: p.position,
+            featured: p.featured === "1" ? "Có" : "Không"
+        }));
+
+        const buffer = importExport.exportToExcel(data, columns, 'Products');
+
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', 'attachment; filename=products.xlsx');
+        res.send(buffer);
+    } catch (error) {
+        console.error("Export Error:", error);
+        req.flash("error", "Lỗi xuất file Excel!");
+        res.redirect("back");
+    }
+}
+
+// [POST] /admin/products/import
+module.exports.importExcel = async (req, res) => {
+    try {
+        if (!req.file) {
+            req.flash("error", "Vui lòng chọn file Excel!");
+            return res.redirect("back");
+        }
+
+        const data = importExport.importFromExcel(req.file.buffer);
+        let successCount = 0;
+        let failCount = 0;
+
+        for (const item of data) {
+            try {
+                // Kiểm tra xem ID có tồn tại không
+                if (item.ID) {
+                    const existingProduct = await Product.findById(item.ID);
+                    if (existingProduct) {
+                        // Cập nhật (giản lược)
+                        existingProduct.title = item['Tên sản phẩm'] || existingProduct.title;
+                        existingProduct.price = parseInt(item['Giá']) || existingProduct.price;
+                        existingProduct.stock = parseInt(item['Tồn kho']) || existingProduct.stock;
+                        await existingProduct.save();
+                        successCount++;
+                        continue;
+                    }
+                }
+                
+                // Mặc định tạo mới nếu không có ID
+                if (item['Tên sản phẩm']) {
+                    const newProduct = new Product({
+                        title: item['Tên sản phẩm'],
+                        price: parseInt(item['Giá']) || 0,
+                        discountPercentage: parseInt(item['% Giảm']) || 0,
+                        stock: parseInt(item['Tồn kho']) || 0,
+                        status: item['Trạng thái'] === "Hoạt động" ? "active" : "inactive",
+                        createdBy: {
+                            account_id: res.locals.user.id
+                        }
+                    });
+                    await newProduct.save();
+                    successCount++;
+                } else {
+                    failCount++;
+                }
+            } catch (err) {
+                console.error("Import item error:", err);
+                failCount++;
+            }
+        }
+
+        createLog(req, res, {
+            action: "import",
+            module: "products",
+            description: `Import Excel: ${successCount} thành công, ${failCount} thất bại`
+        });
+
+        req.flash("success", `Import thành công ${successCount} sản phẩm, lỗi ${failCount} dòng.`);
+        res.redirect("back");
+
+    } catch (error) {
+        console.error("Import Error:", error);
+        req.flash("error", "Lỗi Import file Excel!");
+        res.redirect("back");
     }
 }

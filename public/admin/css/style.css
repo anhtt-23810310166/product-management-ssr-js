@@ -828,6 +828,48 @@ body.admin-page {
   text-decoration: none;
 }
 
+.btn-export-excel {
+  background: var(--success);
+  color: #fff;
+  border: none;
+  padding: 7px 14px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.78rem;
+  transition: var(--transition);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-export-excel:hover {
+  color: #fff;
+  background: #47b878; /* slightly darker success */
+  text-decoration: none;
+}
+
+.btn-import-excel {
+  background: var(--warning);
+  color: #fff;
+  border: none;
+  padding: 7px 14px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.78rem;
+  transition: var(--transition);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-import-excel:hover {
+  color: #fff;
+  background: #e6b300; /* slightly darker warning */
+  text-decoration: none;
+}
+
 /* ===== Filter Bar ===== */
 .admin-filter-bar {
   background: var(--card-bg);

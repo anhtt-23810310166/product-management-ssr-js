@@ -22,6 +22,8 @@ const uploadFields = (req, res, next) => {
 };
 
 router.get("/", controller.index);
+router.get("/export", auth.requirePermission("products_view"), controller.exportExcel);
+router.post("/import", auth.requirePermission("products_create"), upload.single("file"), controller.importExcel);
 router.get("/create", auth.requirePermission("products_create"), controller.create);
 router.post("/create", auth.requirePermission("products_create"), uploadFields, whitelist(productFields), validate.createPost, controller.createPost);
 router.get("/edit/:id", auth.requirePermission("products_edit"), controller.edit);

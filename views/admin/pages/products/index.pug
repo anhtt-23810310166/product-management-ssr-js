@@ -9,10 +9,18 @@ include ../../mixins/batch-actions.pug
 block main
   div(data-crud=`${prefixAdmin}/products` data-entity-name="sản phẩm" style="display:none")
   +pageHeader("Danh sách sản phẩm", "Quản lý tất cả sản phẩm trong hệ thống")
-    if userPermissions && userPermissions.includes("products_create")
-      a.btn.btn-add-product(href=`${prefixAdmin}/products/create`)
-        i.fas.fa-plus.mr-2
-        | Thêm sản phẩm
+    .d-flex.align-items-center.gap-2
+      if userPermissions && userPermissions.includes("products_view")
+        a.btn-export-excel(href=`${prefixAdmin}/products/export` title="Xuất Excel")
+          i.fas.fa-file-excel
+          | Xuất Excel
+      if userPermissions && userPermissions.includes("products_create")
+        button.btn-import-excel(type="button" data-toggle="modal" data-target="#importExcelModal" title="Nhập Excel")
+          i.fas.fa-file-import
+          | Nhập Excel
+        a.btn-add-product(href=`${prefixAdmin}/products/create`)
+          i.fas.fa-plus
+          | Thêm sản phẩm
 
   //- Filter bar
   .admin-filter-bar.mb-4
@@ -108,6 +116,26 @@ block main
 
   //- Pagination
   +pagination(pagination)
+
+  //- Modal Import Excel
+  #importExcelModal.modal.fade(tabindex="-1" role="dialog")
+    .modal-dialog(role="document")
+      .modal-content
+        form(action=`${prefixAdmin}/products/import` method="POST" enctype="multipart/form-data")
+          .modal-header
+            h5.modal-title(style="font-size: 1.1rem; font-weight: 600;") Nhập sản phẩm từ Excel
+            button.close(type="button" data-dismiss="modal" aria-label="Close")
+              span(aria-hidden="true") &times;
+          .modal-body
+            .form-group
+              label.form-label.d-block(for="file" style="font-weight: 600; font-size: 13px;") Chọn file Excel (.xlsx)
+              input#file.form-input.d-block.w-100(type="file" name="file" accept=".xlsx, .xls" required style="font-size: 13px;")
+            p.text-muted.mt-2(style="font-size: 13px;") Bạn có thể tải một mẫu Excel bằng cách dùng chức năng "Xuất Excel".
+          .modal-footer
+            button.btn.btn-secondary(type="button" data-dismiss="modal" style="font-size: 13px;") Đóng
+            button.btn.btn-primary(type="submit" style="font-size: 13px;")
+              i.fas.fa-upload.mr-2
+              | Tải lên
 
 block append scripts
   script(src="/admin/js/admin-crud.js")
