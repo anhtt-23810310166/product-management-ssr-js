@@ -92,18 +92,19 @@ block main
           //- Stock
           .mb-3.tz-stock-status
             span.text-muted.mr-3 Trạng thái:
-            if product.stock > 10
-              span.tz-text-success-bold
-                i.fas.fa-check-circle.mr-1
-                | Còn hàng (#{product.stock})
-            else if product.stock > 0
-              span.font-weight-bold.text-warning
-                i.fas.fa-exclamation-triangle.mr-1
-                | Sắp hết (#{product.stock})
-            else
-              span.font-weight-bold.text-danger
-                i.fas.fa-times-circle.mr-1
-                | Hết hàng
+            span#dynamicStockStatus
+              if product.stock > 10
+                span.tz-text-success-bold
+                  i.fas.fa-check-circle.mr-1
+                  | Còn hàng (#{product.stock})
+              else if product.stock > 0
+                span.font-weight-bold.text-warning
+                  i.fas.fa-exclamation-triangle.mr-1
+                  | Sắp hết (#{product.stock})
+              else
+                span.font-weight-bold.text-danger
+                  i.fas.fa-times-circle.mr-1
+                  | Hết hàng
 
           //- Brand
           if brand
@@ -117,9 +118,25 @@ block main
           //- Divider
           hr.my-4
 
+          //- Phân loại (Variants)
+          if product.variants && product.variants.length > 0
+            .mb-4.tz-variants-section
+              h6.font-weight-bold.mb-2
+                i.fas.fa-tags.mr-2.text-muted
+                | Phân loại hàng:
+              .tz-variant-options.d-flex.flex-wrap(style="gap: 10px;")
+                each variant in product.variants
+                  label.tz-variant-btn.mb-0.position-relative(style="cursor: pointer;")
+                    input(type="radio" name="variantId" value=variant._id class="tz-variant-radio position-absolute" style="opacity: 0;" data-price=variant.price data-stock=variant.stock required)
+                    .tz-variant-label.border.rounded.px-3.py-2.text-center(class="variant-box" style="transition: all 0.2s; user-select: none;")
+                      span.d-block.font-weight-500= variant.name + ": " + variant.value
+
           //- Thêm vào giỏ hàng
           if product.stock > 0
-            form(action=`/cart/add/${product._id}` method="POST")
+            form#addToCartForm(action=`/cart/add/${product._id}` method="POST")
+              if product.variants && product.variants.length > 0
+                //- Placeholder for validation script
+                input#selectedVariantId(type="hidden" name="variantId" value="")
               .d-flex.align-items-center.mb-4
                 span.text-muted.mr-4.tz-quantity-label Số lượng:
                 .input-group.tz-quantity-input-group
@@ -253,8 +270,81 @@ block main
             i.fas.fa-comments
             p Chưa có đánh giá nào. Hãy là người đầu tiên đánh giá sản phẩm này!
 
-  //- Script xử lý đánh giá
+  //- Truyền thông tin discount vào JS
   script.
+    window.productDiscountInfo = {
+      baseDiscount: #{product.discountPercentage || 0},
+      flashDiscount: #{flashDiscount ? flashDiscount.percentage : 0}
+    };
+    
+  //- Script xử lý đánh giá và biến thể
+  script.
+    // Variant Selection Logic
+    document.querySelectorAll('.tz-variant-radio').forEach(function(radio) {
+      radio.addEventListener('change', function() {
+        var price = parseInt(this.getAttribute('data-price')) || 0;
+        var stock = parseInt(this.getAttribute('data-stock')) || 0;
+        
+        // Update styled label classes
+        document.querySelectorAll('.tz-variant-label').forEach(function(l) {
+          l.classList.remove('border-primary', 'text-primary', 'shadow-sm');
+        });
+        var labelBox = this.nextElementSibling;
+        if (labelBox) {
+          labelBox.classList.add('border-primary', 'text-primary', 'shadow-sm');
+        }
+
+        // Update hidden input for form
+        document.getElementById('selectedVariantId').value = this.value;
+
+        // Update price display if variant has price > 0
+        if (price > 0) {
+          var currentPriceEl = document.querySelector('.tz-price-current-lg');
+          var oldPriceEl = document.querySelector('.tz-price-old-lg');
+          var savingEl = document.querySelector('.tz-badge-saving');
+          
+          var discountPercent = window.productDiscountInfo.flashDiscount > 0 ? window.productDiscountInfo.flashDiscount : window.productDiscountInfo.baseDiscount;
+          
+          if (discountPercent > 0) {
+            var newPrice = Math.round(price * (1 - discountPercent / 100));
+            var saved = price - newPrice;
+            
+            if (currentPriceEl) currentPriceEl.textContent = newPrice.toLocaleString('vi-VN') + '₫';
+            if (oldPriceEl) oldPriceEl.textContent = price.toLocaleString('vi-VN') + '₫';
+            if (savingEl) savingEl.innerHTML = 'Tiết kiệm: ' + saved.toLocaleString('vi-VN') + '₫';
+          } else {
+            if (currentPriceEl) currentPriceEl.textContent = price.toLocaleString('vi-VN') + '₫';
+            if (oldPriceEl) oldPriceEl.style.display = 'none';
+            if (savingEl) savingEl.style.display = 'none';
+          }
+        }
+
+        // Update Stock Status Text
+        var stockStatusEl = document.getElementById('dynamicStockStatus');
+        if (stockStatusEl) {
+           if (stock > 10) {
+              stockStatusEl.innerHTML = '<span class="tz-text-success-bold"><i class="fas fa-check-circle mr-1"></i>Còn hàng (' + stock + ')</span>';
+           } else if (stock > 0) {
+              stockStatusEl.innerHTML = '<span class="font-weight-bold text-warning"><i class="fas fa-exclamation-triangle mr-1"></i>Sắp hết (' + stock + ')</span>';
+           } else {
+              stockStatusEl.innerHTML = '<span class="font-weight-bold text-danger"><i class="fas fa-times-circle mr-1"></i>Hết hàng</span>';
+           }
+        }
+
+        // Update max stock
+        var qtyInput = document.querySelector('.tz-quantity-input');
+        if (qtyInput) {
+           qtyInput.max = stock;
+           if (parseInt(qtyInput.value) > stock) {
+              qtyInput.value = stock;
+           }
+           if (stock === 0) {
+              qtyInput.value = 1; // reset to 1 but adding to cart will fail validation
+           }
+        }
+      });
+    });
+
     // Star rating selection
     document.querySelectorAll('.tz-star-input').forEach(function(star) {
       star.addEventListener('click', function() {

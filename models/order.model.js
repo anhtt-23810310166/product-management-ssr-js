@@ -29,6 +29,9 @@ const orderSchema = new mongoose.Schema({
     items: [
         {
             productId: String,
+            variantId: String,
+            variantName: String,
+            variantValue: String,
             title: String,
             thumbnail: String,
             price: Number,

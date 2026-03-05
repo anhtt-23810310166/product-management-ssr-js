@@ -91,6 +91,16 @@ block main
               input.form-check-input(type="checkbox" name="featured" id="featured" value="true")
               label.form-check-label(for="featured") Sản phẩm nổi bật
 
+          //- Biến thể sản phẩm
+          .form-group
+            label.form-label Biến thể sản phẩm
+              span.variant-hint  (Màu sắc, kích thước, phiên bản,...)
+            .variants-container#variantsContainer
+            .variant-actions
+              button.btn-add-variant(type="button" onclick="addVariantRow()")
+                i.fas.fa-plus
+                |  Thêm biến thể
+
         .form-col.form-col-side
           .form-group
             label.form-label Ảnh thumbnail
@@ -134,4 +144,5 @@ block append scripts
   script(src="/admin/js/multi-upload-preview.js")
   script(src="/admin/libs/tinymce/tinymce.min.js")
   script(src="/admin/js/tinymce-init.js")
+  script(src="/admin/js/product-variants.js")
 

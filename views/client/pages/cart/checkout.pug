@@ -111,6 +111,8 @@ block main
                   
                   .flex-grow-1.ml-3
                     a.text-dark.font-weight-bold(href=`/products/detail/${item.product.slug}` class="tz-auto-52355a")= item.product.title
+                    if item.variantInfo
+                      .text-muted.small.mt-1 Phân loại: #{item.variantInfo.name}: #{item.variantInfo.value}
                     .d-flex.justify-content-between.align-items-center.mt-2
                       span.text-muted(class="tz-auto-766745") Số lượng: x#{item.quantity}
                       span.font-weight-bold(class="tz-auto-267f6d")= item.itemTotal.toLocaleString() + ' ₫'

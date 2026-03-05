@@ -24,6 +24,9 @@ class ProductService extends BaseService {
             data.images = files["images"].map(file => file.path);
         }
 
+        // Xử lý biến thể
+        data.variants = this._parseVariants(data);
+
         const product = new this.Model(data);
         await product.save();
         return product;
@@ -67,8 +70,42 @@ class ProductService extends BaseService {
             product.images = [...(product.images || []), ...newImages];
         }
 
+        // Xử lý biến thể
+        product.variants = this._parseVariants(data);
+
         await product.save();
         return product;
+    }
+
+    /**
+     * Parse variants từ form data
+     * Form gửi: variantName[], variantValue[], variantPrice[], variantStock[], variantSku[]
+     */
+    _parseVariants(data) {
+        const names = data["variantName"];
+        if (!names) return [];
+
+        const nameArr = Array.isArray(names) ? names : [names];
+        const valueArr = Array.isArray(data["variantValue"]) ? data["variantValue"] : [data["variantValue"] || ""];
+        const priceArr = Array.isArray(data["variantPrice"]) ? data["variantPrice"] : [data["variantPrice"] || "0"];
+        const stockArr = Array.isArray(data["variantStock"]) ? data["variantStock"] : [data["variantStock"] || "0"];
+        const skuArr = Array.isArray(data["variantSku"]) ? data["variantSku"] : [data["variantSku"] || ""];
+
+        const variants = [];
+        for (let i = 0; i < nameArr.length; i++) {
+            const name = (nameArr[i] || "").trim();
+            const value = (valueArr[i] || "").trim();
+            if (!name && !value) continue;
+
+            variants.push({
+                name: name,
+                value: value,
+                price: parseInt(priceArr[i]) || 0,
+                stock: parseInt(stockArr[i]) || 0,
+                sku: (skuArr[i] || "").trim()
+            });
+        }
+        return variants;
     }
 }
 

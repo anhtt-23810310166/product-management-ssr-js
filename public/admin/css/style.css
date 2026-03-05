@@ -3534,6 +3534,112 @@ body.admin-page {
 }
 
 /* ================================================================
+   VARIANT STYLES (Product Create/Edit)
+   ================================================================ */
+
+.variant-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.variants-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.variant-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--content-bg);
+  padding: 12px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+}
+
+.variant-row-fields {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+}
+
+.variant-field .form-input {
+  width: 100%;
+  margin-bottom: 0;
+}
+
+.btn-remove-variant {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  background: rgba(241, 65, 108, 0.1);
+  color: var(--danger);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.btn-remove-variant:hover {
+  background: var(--danger);
+  color: #fff;
+}
+
+.btn-add-variant {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: rgba(62, 151, 255, 0.1);
+  color: var(--accent);
+  border: 1px dashed var(--accent);
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-add-variant:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* Detail Variants Table */
+.detail-variants-table {
+  background: var(--content-bg);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+.variant-value-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  background: var(--bg-light);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.variant-sku {
+  background: rgba(80, 205, 137, 0.1);
+  color: var(--success);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+
+/* ================================================================
    ADMIN RESPONSIVE STYLES
    ================================================================ */
 

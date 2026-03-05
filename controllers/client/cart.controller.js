@@ -26,12 +26,20 @@ const getCartDetails = async (cart) => {
     for (const item of cart.items) {
         const product = products.find(p => p.id === item.productId);
         if (product) {
-            const unitPrice = getDiscountedPrice(product);
+            let variant = null;
+            if (item.variantId && product.variants) {
+                variant = product.variants.find(v => v._id.toString() === item.variantId.toString());
+            }
+
+            const unitPrice = getDiscountedPrice(product, variant);
             const itemTotal = unitPrice * item.quantity;
             cartTotal += itemTotal;
 
             cartItems.push({
+                itemId: item._id,
                 product,
+                variant,
+                variantInfo: item.variantInfo,
                 quantity: item.quantity,
                 unitPrice,
                 itemTotal
@@ -84,10 +92,33 @@ module.exports.addPost = async (req, res) => {
         }
 
         const cart = req.cart;
+        const variantId = req.body.variantId || "";
+
+        let variantInfo = null;
+        let maxStock = product.stock;
+
+        // Nếu sản phẩm có biến thể nhưng chưa chọn biến thể
+        if (product.variants && product.variants.length > 0 && !variantId) {
+            if (isAjax) return res.json({ success: false, message: "Vui lòng chọn phân loại hàng!" });
+            req.flash("error", "Vui lòng chọn phân loại hàng!");
+            return res.redirect("back");
+        }
+
+        if (variantId && product.variants) {
+            const variant = product.variants.find(v => v._id.toString() === variantId);
+            if (!variant) {
+                if (isAjax) return res.json({ success: false, message: "Phân loại không hợp lệ!" });
+                req.flash("error", "Phân loại không hợp lệ!");
+                return res.redirect("back");
+            }
+            maxStock = variant.stock;
+            variantInfo = {
+                name: variant.name,
+                value: variant.value
+            };
+        }
 
         // Check if item exceeds standard stock or flash sale limit
-        let maxStock = product.stock;
-        
         // Find if this product has an active flash sale (to check flash stock logic)
         const FlashSale = require("../../models/flash-sale.model");
         const now = new Date();
@@ -105,15 +136,12 @@ module.exports.addPost = async (req, res) => {
                 if (remainingFlashStock < maxStock) {
                     maxStock = remainingFlashStock;
                 }
-            } else if (fp && fp.sold >= fp.stock) {
-                // Flash sale stock ended. Standard rules apply
-                maxStock = product.stock;
             }
         }
 
-        // Kiểm tra sản phẩm đã có trong giỏ chưa
+        // Kiểm tra sản phẩm đã có trong giỏ chưa (cùng productId VÀ cùng variantId)
         const existingItem = cart.items.find(
-            item => item.productId === productId
+            item => item.productId === productId && (item.variantId || "") === variantId
         );
 
         const currentQuantity = existingItem ? existingItem.quantity : 0;
@@ -128,14 +156,14 @@ module.exports.addPost = async (req, res) => {
         if (existingItem) {
             // Đã có -> cộng thêm số lượng
             await Cart.updateOne(
-                { _id: cart._id, "items.productId": productId },
+                { _id: cart._id, "items._id": existingItem._id },
                 { $inc: { "items.$.quantity": quantity } }
             );
         } else {
             // Chưa có -> thêm mới
             await Cart.updateOne(
                 { _id: cart._id },
-                { $push: { items: { productId, quantity } } }
+                { $push: { items: { productId, quantity, variantId, variantInfo } } }
             );
         }
 
@@ -204,28 +232,51 @@ module.exports.update = async (req, res) => {
             }
         }
 
-        if (quantity > maxStock) {
-            return res.json({ success: false, message: `Chỉ còn ${maxStock} sản phẩm khả dụng`});
+        const currentCart = await Cart.findById(req.cart._id);
+        const itemId = req.body.itemId; // Try to use exact Item ID in cart since multiple variants might exist
+
+        let findCondition = {};
+        if (itemId) {
+            findCondition = { _id: currentCart._id, "items._id": itemId };
+        } else {
+            findCondition = { _id: currentCart._id, "items.productId": productId }; // Fallback
         }
 
-        const currentCart = await Cart.findById(cart._id);
-        const existingItem = currentCart.items.find(
-            item => item.productId === productId
-        );
+        let existingItem = null;
+        if (itemId) {
+            existingItem = currentCart.items.id(itemId);
+        } else {
+            existingItem = currentCart.items.find(item => item.productId === productId);
+        }
 
         if (!existingItem) {
             return res.json({ success: false, message: "Sản phẩm không tồn tại trong giỏ" });
         }
 
+        if (existingItem.variantId && targetProduct.variants) {
+            const variant = targetProduct.variants.find(v => v._id.toString() === existingItem.variantId.toString());
+            if (variant) {
+                maxStock = variant.stock;
+            }
+        }
+
+        if (quantity > maxStock) {
+            return res.json({ success: false, message: `Chỉ còn ${maxStock} sản phẩm khả dụng`});
+        }
+
         // Cập nhật số lượng trong DB
         await Cart.updateOne(
-            { _id: cart._id, "items.productId": productId },
+            findCondition,
             { $set: { "items.$.quantity": quantity } }
         );
 
         // Tính lại tổng
         const product = await Product.findById(productId);
-        const unitPrice = getDiscountedPrice(product);
+        let variant = null;
+        if (existingItem.variantId && product.variants) {
+            variant = product.variants.find(v => v._id.toString() === existingItem.variantId.toString());
+        }
+        const unitPrice = getDiscountedPrice(product, variant);
         const itemTotal = unitPrice * quantity;
 
         // Lấy cart mới từ DB để tính tổng chính xác
@@ -251,12 +302,21 @@ module.exports.remove = async (req, res) => {
     try {
         const productId = req.params.productId;
 
+        const itemId = req.body.itemId;
+
         const cart = req.cart;
 
         // Xóa item khỏi giỏ trong DB
+        let pullCondition = {};
+        if (itemId) {
+            pullCondition = { _id: itemId };
+        } else {
+            pullCondition = { productId: productId };
+        }
+
         await Cart.updateOne(
             { _id: cart._id },
-            { $pull: { items: { productId: productId } } }
+            { $pull: { items: pullCondition } }
         );
 
         // Lấy cart mới từ DB để tính tổng
@@ -353,15 +413,23 @@ module.exports.checkoutPost = async (req, res) => {
         for (const cartItem of cart.items) {
             const product = products.find(p => p.id === cartItem.productId);
             if (product) {
-                const unitPrice = getDiscountedPrice(product);
+                let variant = null;
+                if (cartItem.variantId && product.variants) {
+                    variant = product.variants.find(v => v._id.toString() === cartItem.variantId.toString());
+                }
+
+                const unitPrice = getDiscountedPrice(product, variant);
                 const itemTotal = unitPrice * cartItem.quantity;
                 totalAmount += itemTotal;
 
                 items.push({
                     productId: product._id,
+                    variantId: cartItem.variantId || "",
+                    variantName: cartItem.variantInfo ? cartItem.variantInfo.name : "",
+                    variantValue: cartItem.variantInfo ? cartItem.variantInfo.value : "",
                     title: product.title,
                     thumbnail: product.thumbnail,
-                    price: product.price,
+                    price: variant ? variant.price : product.price,
                     discountPercentage: product.discountPercentage || 0,
                     unitPrice,
                     quantity: cartItem.quantity,
@@ -369,10 +437,17 @@ module.exports.checkoutPost = async (req, res) => {
                 });
 
                 // Trừ stock
-                await Product.updateOne(
-                    { _id: product._id },
-                    { $inc: { stock: -cartItem.quantity } }
-                );
+                if (variant) {
+                    await Product.updateOne(
+                        { _id: product._id, "variants._id": variant._id },
+                        { $inc: { "variants.$.stock": -cartItem.quantity } }
+                    );
+                } else {
+                    await Product.updateOne(
+                        { _id: product._id },
+                        { $inc: { stock: -cartItem.quantity } }
+                    );
+                }
 
                 // Cập nhật Flash Sale sold nếu sản phẩm nằm trong Flash Sale đang diễn ra
                 const now = new Date();

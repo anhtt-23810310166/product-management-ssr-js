@@ -75,6 +75,33 @@ block main
                 else
                   span.status-badge.status-inactive Dừng hoạt động
 
+        if product.variants && product.variants.length > 0
+          .detail-section
+            h3.detail-section-title Biến thể sản phẩm
+              span.variant-count  (#{product.variants.length})
+            .detail-variants-table
+              table.dashboard-table
+                thead
+                  tr
+                    th Tên
+                    th Giá trị
+                    th Giá
+                    th Tồn kho
+                    th SKU
+                tbody
+                  each variant in product.variants
+                    tr
+                      td= variant.name
+                      td
+                        span.variant-value-badge= variant.value
+                      td.text-danger= variant.price ? variant.price.toLocaleString() + ' ₫' : '—'
+                      td= variant.stock || 0
+                      td
+                        if variant.sku
+                          code.variant-sku= variant.sku
+                        else
+                          span.text-muted —
+
       .detail-side
         .detail-section
           h3.detail-section-title Ảnh

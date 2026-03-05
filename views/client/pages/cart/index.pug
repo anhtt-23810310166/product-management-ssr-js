@@ -3,7 +3,6 @@ extends ../../layouts/default
 block main
   .container.py-4
     h2.page-title
-      i.fas.fa-shopping-cart.mr-2
       | Giỏ hàng của bạn
 
     if cartItems && cartItems.length > 0
@@ -22,7 +21,7 @@ block main
                       th.border-0.text-center(scope="col")
                   tbody
                     each item in cartItems
-                      tr.cart-item(data-product-id=item.product._id)
+                      tr.cart-item(data-product-id=item.product._id data-item-id=item.itemId)
                         td
                           .d-flex.align-items-center
                             a.mr-3(href=`/products/detail/${item.product.slug}`)
@@ -33,6 +32,8 @@ block main
                                   i.fas.fa-image
                             div
                               a.text-dark.font-weight-bold(href=`/products/detail/${item.product.slug}` class="tz-auto-52355a")= item.product.title
+                              if item.variantInfo
+                                .text-muted.small.mt-1 Phân loại: #{item.variantInfo.name}: #{item.variantInfo.value}
                               if item.product.discountPercentage && item.product.discountPercentage > 0
                                 span.badge.badge-danger.mt-2(class="tz-auto-30fe19") -#{item.product.discountPercentage}%
                         
@@ -45,7 +46,7 @@ block main
                           .quantity-control.input-group.mx-auto(class="tz-auto-9a1fc6")
                             .input-group-prepend
                               button.btn.btn-light.quantity-minus.px-2(type="button" data-product-id=item.product._id class="tz-auto-6818db") -
-                            input.form-control.text-center.border-0.px-0.quantity-input(type="number" value=item.quantity min="1" data-product-id=item.product._id class="tz-auto-306926")
+                            input.form-control.text-center.border-0.px-0.quantity-input(type="number" value=item.quantity min="1" data-product-id=item.product._id data-item-id=item.itemId class="tz-auto-306926")
                             .input-group-append
                               button.btn.btn-light.quantity-plus.px-2(type="button" data-product-id=item.product._id class="tz-auto-6818db") +
                               
@@ -53,7 +54,7 @@ block main
                           .font-weight-bold.cart-item-total(class="tz-auto-f1ba3e")= item.itemTotal.toLocaleString() + ' ₫'
                           
                         td.text-center.align-middle
-                          button.btn.btn-sm.btn-outline-danger.cart-remove-btn(type="button" data-product-id=item.product._id title="Xóa" class="tz-auto-3e0512")
+                          button.btn.btn-sm.btn-outline-danger.cart-remove-btn(type="button" data-product-id=item.product._id data-item-id=item.itemId title="Xóa" class="tz-auto-3e0512")
                             i.fas.fa-trash-alt
 
         .col-lg-4

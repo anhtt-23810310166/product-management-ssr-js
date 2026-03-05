@@ -6,7 +6,7 @@ const validate = require("../../validates/admin/product.validate");
 const auth = require("../../middlewares/admin/auth.middleware");
 const whitelist = require("../../middlewares/whitelist.middleware");
 
-const productFields = ["title", "product_category_id", "brand_id", "description", "price", "discountPercentage", "stock", "status", "position", "featured", "thumbnail", "images", "deletedImages"];
+const productFields = ["title", "product_category_id", "brand_id", "description", "price", "discountPercentage", "stock", "status", "position", "featured", "thumbnail", "images", "deletedImages", "variantName", "variantValue", "variantPrice", "variantStock", "variantSku"];
 const rawUpload = upload.fields([{ name: "thumbnail", maxCount: 1 }, { name: "images", maxCount: 8 }]);
 
 // Wrapper to catch multer/Cloudinary errors gracefully

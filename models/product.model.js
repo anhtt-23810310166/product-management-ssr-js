@@ -25,6 +25,18 @@ const productSchema = new mongoose.Schema({
         type: [String],
         default: []
     },
+    variants: {
+        type: [
+            {
+                name: { type: String, default: "" },
+                value: { type: String, default: "" },
+                price: { type: Number, default: 0 },
+                stock: { type: Number, default: 0 },
+                sku: { type: String, default: "" }
+            }
+        ],
+        default: []
+    },
     status: String,
     featured: {
         type: Boolean,

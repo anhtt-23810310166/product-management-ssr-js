@@ -99,6 +99,8 @@ document.addEventListener("DOMContentLoaded", function () {
         const actionUrl = form.getAttribute('action');
         const quantityInput = form.querySelector('input[name="quantity"]');
         const quantity = quantityInput ? parseInt(quantityInput.value) : 1;
+        const variantInput = form.querySelector('input[name="variantId"]:checked');
+        const variantId = variantInput ? variantInput.value : "";
 
         fetch(actionUrl, {
           method: 'POST',
@@ -106,7 +108,7 @@ document.addEventListener("DOMContentLoaded", function () {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
           },
-          body: JSON.stringify({ quantity: quantity })
+          body: JSON.stringify({ quantity: quantity, variantId: variantId })
         })
           .then(res => res.json())
           .then(data => {
@@ -161,6 +163,7 @@ document.addEventListener("DOMContentLoaded", function () {
   document.querySelectorAll(".cart-wrapper .quantity-input").forEach(function (input) {
     input.addEventListener("change", function () {
       var productId = this.dataset.productId;
+      var itemId = this.dataset.itemId;
       var quantity = parseInt(this.value);
       if (quantity < 1) {
         this.value = 1;
@@ -170,13 +173,14 @@ document.addEventListener("DOMContentLoaded", function () {
       fetch("/cart/update/" + productId, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ quantity: quantity }),
+        body: JSON.stringify({ quantity: quantity, itemId: itemId }),
       })
         .then(function (res) { return res.json(); })
         .then(function (data) {
           if (data.success) {
             // Update item total
-            var row = document.querySelector('.cart-item[data-product-id="' + productId + '"]');
+            var row = document.querySelector('.cart-item[data-item-id="' + itemId + '"]');
+            if (!row) row = document.querySelector('.cart-item[data-product-id="' + productId + '"]');
             if (row) {
               row.querySelector(".cart-item-total").textContent = formatPrice(data.itemTotal);
             }
@@ -201,18 +205,21 @@ document.addEventListener("DOMContentLoaded", function () {
   document.querySelectorAll(".cart-remove-btn").forEach(function (btn) {
     btn.addEventListener("click", function () {
       var productId = this.dataset.productId;
+      var itemId = this.dataset.itemId;
 
       if (!confirm("Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?")) return;
 
       fetch("/cart/remove/" + productId, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ itemId: itemId })
       })
         .then(function (res) { return res.json(); })
         .then(function (data) {
           if (data.success) {
             // Remove row from DOM
-            var row = document.querySelector('.cart-item[data-product-id="' + productId + '"]');
+            var row = document.querySelector('.cart-item[data-item-id="' + itemId + '"]');
+            if (!row) row = document.querySelector('.cart-item[data-product-id="' + productId + '"]');
             if (row) row.remove();
 
             // Update cart total

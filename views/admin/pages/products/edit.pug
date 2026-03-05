@@ -103,6 +103,32 @@ block main
               input.form-check-input(type="checkbox" name="featured" id="featured" value="true" checked=product.featured)
               label.form-check-label(for="featured") Sản phẩm nổi bật
 
+          //- Biến thể sản phẩm
+          .form-group
+            label.form-label Biến thể sản phẩm
+              span.variant-hint  (Màu sắc, kích thước, phiên bản,...)
+            .variants-container#variantsContainer
+              if product.variants && product.variants.length > 0
+                each variant, idx in product.variants
+                  .variant-row(data-index=idx)
+                    .variant-row-fields
+                      .variant-field
+                        input.form-input.variant-input(type="text" name="variantName" placeholder="Tên (VD: Màu)" value=variant.name)
+                      .variant-field
+                        input.form-input.variant-input(type="text" name="variantValue" placeholder="Giá trị (VD: Đỏ)" value=variant.value)
+                      .variant-field
+                        input.form-input.variant-input(type="text" name="variantPrice" placeholder="Giá" value=variant.price)
+                      .variant-field
+                        input.form-input.variant-input(type="text" name="variantStock" placeholder="Tồn kho" value=variant.stock)
+                      .variant-field
+                        input.form-input.variant-input(type="text" name="variantSku" placeholder="SKU" value=variant.sku)
+                    button.btn-remove-variant(type="button" onclick="removeVariantRow(this)" title="Xóa biến thể")
+                      i.fas.fa-trash-alt
+            .variant-actions
+              button.btn-add-variant(type="button" onclick="addVariantRow()")
+                i.fas.fa-plus
+                |  Thêm biến thể
+
         .form-col.form-col-side
           .form-group
             label.form-label Ảnh
@@ -165,4 +191,5 @@ block append scripts
   script(src="/admin/js/multi-upload-preview.js")
   script(src="/admin/libs/tinymce/tinymce.min.js")
   script(src="/admin/js/tinymce-init.js")
+  script(src="/admin/js/product-variants.js")
 
