@@ -1,79 +1,155 @@
 include ../mixins/menu-category.pug
 
+//- Mobile Menu Overlay & Sidebar
+.tz-mobile-menu-overlay#mobileMenuOverlay(onclick="toggleMobileMenu()")
+.tz-mobile-menu#mobileMenu
+  .tz-mobile-menu-header
+    a.tz-logo.d-flex.align-items-center.text-decoration-none(href="/")
+      i.fas.fa-bolt.mr-2
+      span TechZone
+    button.tz-mobile-menu-close#mobileMenuClose(onclick="toggleMobileMenu()")
+      i.fas.fa-times
+
+  .tz-mobile-menu-body
+    //- User section
+    if clientUser
+      .tz-mobile-menu-user
+        .tz-mobile-menu-user-info
+          .tz-mobile-menu-avatar
+            if clientUser.avatar
+              img(src=clientUser.avatar alt=clientUser.fullName)
+            else
+              i.fas.fa-user
+          .tz-mobile-menu-info
+            .tz-mobile-menu-name= clientUser.fullName
+            .tz-mobile-menu-email= clientUser.email
+        .tz-mobile-menu-actions
+          a.tz-mobile-menu-btn-action.tz-mobile-menu-btn-login(href="/user/info") Tài khoản
+          a.tz-mobile-menu-btn-action.tz-mobile-menu-btn-register(href="/orders") Đơn hàng
+    else
+      .tz-mobile-menu-user
+        .tz-mobile-menu-actions
+          a.tz-mobile-menu-btn-action.tz-mobile-menu-btn-login(href="/user/login") Đăng nhập
+          a.tz-mobile-menu-btn-action.tz-mobile-menu-btn-register(href="/user/register") Đăng ký
+
+    //- Navigation
+    ul.tz-mobile-menu-nav
+      li.tz-mobile-menu-item
+        a.tz-mobile-menu-link(href="/")
+          i.fas.fa-home
+          span Trang chủ
+      li.tz-mobile-menu-item
+        a.tz-mobile-menu-link(href="/products")
+          i.fas.fa-store
+          span Sản phẩm
+          i.fas.fa-chevron-right.tz-mobile-menu-arrow
+      li.tz-mobile-menu-item
+        a.tz-mobile-menu-link(href="/cart")
+          i.fas.fa-shopping-cart
+          span Giỏ hàng
+          span.badge.badge-danger.ml-2= cartTotalQuantity || 0
+      li.tz-mobile-menu-item
+        a.tz-mobile-menu-link(href="/wishlist")
+          i.fas.fa-heart
+          span Yêu thích
+      if clientUser
+        li.tz-mobile-menu-item
+          a.tz-mobile-menu-link(href="/user/info")
+            i.fas.fa-user-circle
+            span Tài khoản của tôi
+        li.tz-mobile-menu-item
+          a.tz-mobile-menu-link(href="/orders")
+            i.fas.fa-clipboard-list
+            span Đơn mua
+        li.tz-mobile-menu-item
+          a.tz-mobile-menu-link.btn-open-chat(href="javascript:void(0)" onclick="toggleMobileMenu()")
+            i.fas.fa-comments
+            span Tin nhắn
+
+    //- Footer
+    if clientUser
+      .tz-mobile-menu-footer
+        a.tz-mobile-menu-logout(href="/user/logout")
+          i.fas.fa-sign-out-alt
+          span Đăng xuất
+
 header.tz-header.sticky-top.bg-white.shadow-sm
   //- TẦNG 1: SEARCH BAR & TOOLBAR
   .tz-header-top.border-bottom
     .container
-      .row.align-items-center.py-3
-        //- Cột Logo (với hamburger trên mobile)
-        .col-lg-3.col-md-4.col-6.d-flex.align-items-center
-          button.tz-mobile-menu-btn.d-lg-none(type="button" onclick="document.querySelector('.tz-header-nav').classList.toggle('d-none'); document.querySelector('.tz-header-nav').classList.toggle('d-block');")
+      .row.align-items-center.py-2.py-lg-3
+        //- Cột Logo & Menu (Mobile: Only Menu)
+        .col-lg-3.col-md-4.col-auto.d-flex.align-items-center
+          button.tz-mobile-menu-btn.d-lg-none(type="button" onclick="toggleMobileMenu()")
             i.fas.fa-bars
-          a.tz-logo.d-flex.align-items-center.text-decoration-none(href="/")
+          a.tz-logo.d-none.d-lg-flex.align-items-center.text-decoration-none(href="/")
             i.fas.fa-bolt.text-primary.mr-2.tz-logo-icon
             span.font-weight-bold.text-dark.tz-logo-text TechZone
-        
-        //- Cột Thanh tìm kiếm
-        .col-lg-5.d-none.d-lg-block
+
+        //- Cột Thanh tìm kiếm (Desktop & Mobile)
+        .col-lg-5.col.px-2.px-lg-3
           form.tz-search-form.mb-0(action="/products" method="GET")
             .input-group
-              .input-group-prepend
+              .input-group-prepend.d-none.d-sm-flex
                 span.input-group-text.bg-white.border-right-0
                   i.fas.fa-search.text-muted
-              input#desktopSearchInput.form-control.border-left-0(type="text" name="keyword" placeholder="Tìm kiếm sản phẩm, thương hiệu..." autocomplete="off")
+              input#desktopSearchInput.form-control.border-left-0(type="text" name="keyword" placeholder="Tìm kiếm sản phẩm..." autocomplete="off")
               .input-group-append
-                button.btn.tz-voice-btn(type="button" title="Tìm bằng giọng nói" onclick="startVoiceSearch('desktopSearchInput')")
-                  i.fas.fa-microphone
-                button.btn.btn-primary.tz-search-btn(type="submit") Tìm
+                button.btn.btn-primary.tz-search-btn(type="submit")
+                  i.fas.fa-search.d-lg-none
+                  span.d-none.d-lg-inline Tìm
             .tz-suggest-dropdown#suggestDropdown
-        
-        //- Cột Công cụ xử lý
-        .col-lg-4.col-md-8.col-6.text-right
+
+        //- Cột Công cụ xử lý (Desktop Only)
+        .col-lg-4.d-none.d-lg-block.text-right
           .tz-header-tools.d-flex.justify-content-end.align-items-center
-            //- Nút chuyển ngôn ngữ
-            .tz-lang-switch.mr-4.d-none.d-md-block
-              span.badge.badge-primary.p-2.px-3.text-primary.tz-lang-badge VN / EN
-            
-            //- Yêu thích
-            a.tz-tool-icon.mr-4.position-relative.text-dark(href="/wishlist" title="Yêu thích")
-              i.fas.fa-heart
-            
-            //- Mini giỏ hàng
-            a.tz-tool-icon.mr-4.position-relative.text-dark(href="/cart")
-              i.fas.fa-shopping-cart
-              span.badge.badge-danger.badge-pill.position-absolute#miniCartBadge= cartTotalQuantity || 0
-            
-            //- Khu vực Người dùng — Shopee-style hover popup
-            if clientUser
-              .tz-user-popup-wrap
-                a.tz-tool-icon.text-dark(href="/user/info")
-                  i.fas.fa-user-circle
-                .tz-user-popup
-                  .tz-user-popup-header
-                    .tz-user-popup-avatar
-                      if clientUser.avatar
-                        img(src=clientUser.avatar alt=clientUser.fullName)
-                      else
-                        i.fas.fa-user-circle
-                    .tz-user-popup-name= clientUser.fullName
-                  .tz-user-popup-body
-                    a.tz-user-popup-item(href="/user/info")
-                      i.fas.fa-user.mr-2
-                      | Tài khoản của tôi
-                    a.tz-user-popup-item(href="/orders")
-                      i.fas.fa-clipboard-list.mr-2
-                      | Đơn mua
-                  .tz-user-popup-footer
-                    a.tz-user-popup-item.tz-user-popup-logout(href="/user/logout")
-                      i.fas.fa-sign-out-alt.mr-2
-                      | Đăng xuất
-            else
-              .tz-user-popup-wrap
-                a.tz-tool-icon.text-dark(href="/user/login")
-                  i.fas.fa-user
-                .tz-user-popup
-                  .tz-user-popup-guest
-                    a.tz-popup-btn-login(href="/user/login") Đăng nhập
-                    a.tz-popup-btn-register(href="/user/register") Đăng ký
+            //- Desktop tool icons
+            .d-flex.align-items-center
+              //- Nút chuyển ngôn ngữ
+              .tz-lang-switch.mr-4
+                span.badge.badge-primary.p-2.px-3.text-primary.tz-lang-badge VN / EN
+
+              //- Yêu thích
+              a.tz-tool-icon.mr-4.position-relative.text-dark(href="/wishlist" title="Yêu thích")
+                i.fas.fa-heart
+
+              //- Mini giỏ hàng
+              a.tz-tool-icon.mr-4.position-relative.text-dark(href="/cart")
+                i.fas.fa-shopping-cart
+                span.badge.badge-danger.badge-pill.position-absolute#miniCartBadge= cartTotalQuantity || 0
+
+              //- Khu vực Người dùng
+              if clientUser
+                .tz-user-popup-wrap
+                  a.tz-tool-icon.text-dark(href="/user/info")
+                    i.fas.fa-user-circle
+                  .tz-user-popup
+                    .tz-user-popup-header
+                      .tz-user-popup-avatar
+                        if clientUser.avatar
+                          img(src=clientUser.avatar alt=clientUser.fullName)
+                        else
+                          i.fas.fa-user-circle
+                      .tz-user-popup-name= clientUser.fullName
+                    .tz-user-popup-body
+                      a.tz-user-popup-item(href="/user/info")
+                        i.fas.fa-user.mr-2
+                        | Tài khoản của tôi
+                      a.tz-user-popup-item(href="/orders")
+                        i.fas.fa-clipboard-list.mr-2
+                        | Đơn mua
+                    .tz-user-popup-footer
+                      a.tz-user-popup-item.tz-user-popup-logout(href="/user/logout")
+                        i.fas.fa-sign-out-alt.mr-2
+                        | Đăng xuất
+              else
+                .tz-user-popup-wrap
+                  a.tz-tool-icon.text-dark(href="/user/login")
+                    i.fas.fa-user
+                  .tz-user-popup
+                    .tz-user-popup-guest
+                      a.tz-popup-btn-login(href="/user/login") Đăng nhập
+                      a.tz-popup-btn-register(href="/user/register") Đăng ký
+
 
 

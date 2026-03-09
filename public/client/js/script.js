@@ -118,6 +118,10 @@ document.addEventListener("DOMContentLoaded", function () {
               if (miniCartBadge) {
                 miniCartBadge.textContent = data.cartTotalQuantity;
               }
+              const bottomNavCartBadge = document.getElementById('bottomNavCartBadge');
+              if (bottomNavCartBadge) {
+                bottomNavCartBadge.textContent = data.cartTotalQuantity;
+              }
               // Toast thông báo
               if (typeof showToast === 'function') {
                 showToast("Đã thêm sản phẩm vào giỏ hàng!", "success");
@@ -158,6 +162,8 @@ document.addEventListener("DOMContentLoaded", function () {
   function updateBadge(totalQty) {
     var badge = document.getElementById("miniCartBadge");
     if (badge) badge.textContent = totalQty;
+    var bottomBadge = document.getElementById("bottomNavCartBadge");
+    if (bottomBadge) bottomBadge.textContent = totalQty;
   }
 
   // Update quantity via AJAX
@@ -500,6 +506,11 @@ function toggleWishlist(btn) {
         btn.classList.remove("active");
         icon.className = "far fa-heart";
       }
+      // Update badge
+      var wishlistBadge = document.getElementById("bottomNavWishlistBadge");
+      if (wishlistBadge) {
+        wishlistBadge.textContent = data.wishlistCount || 0;
+      }
       // Show toast if available
       if (typeof showToast === "function") {
         showToast(data.message, "success");
@@ -603,11 +614,80 @@ document.addEventListener("DOMContentLoaded", function() {
   updateCompareUI();
 });
 
+// ===== Mobile Menu Toggle =====
+function toggleMobileMenu() {
+  var overlay = document.getElementById('mobileMenuOverlay');
+  var menu = document.getElementById('mobileMenu');
+  var body = document.body;
+  
+  if (!overlay || !menu) return;
+  
+  var isActive = menu.classList.contains('active');
+  
+  if (isActive) {
+    // Close menu
+    menu.classList.remove('active');
+    overlay.classList.remove('active');
+    body.style.overflow = '';
+    // Hide overlay completely after animation
+    setTimeout(function() { 
+      if (!menu.classList.contains('active')) {
+        overlay.style.display = 'none'; 
+      }
+    }, 300);
+  } else {
+    // Open menu
+    overlay.style.display = 'block';
+    // Small delay to trigger CSS transition
+    setTimeout(function() {
+      overlay.classList.add('active');
+      menu.classList.add('active');
+    }, 10);
+    body.style.overflow = 'hidden'; 
+  }
+}
+
+// Highlight active link in mobile menu
+document.addEventListener('DOMContentLoaded', function() {
+  var currentPath = window.location.pathname;
+  document.querySelectorAll('.tz-mobile-menu-link').forEach(function(link) {
+    if (link.getAttribute('href') === currentPath) {
+      link.classList.add('active');
+    }
+  });
+});
+
+// Close mobile menu on escape key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    var overlay = document.getElementById('mobileMenuOverlay');
+    var menu = document.getElementById('mobileMenu');
+    if (overlay && menu && overlay.classList.contains('active')) {
+      toggleMobileMenu();
+    }
+  }
+});
+
+// Mobile submenu toggle
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.tz-mobile-menu-link').forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      var parent = this.closest('.tz-mobile-menu-item');
+      var submenu = parent.querySelector('.tz-mobile-submenu');
+      
+      if (submenu) {
+        e.preventDefault();
+        parent.classList.toggle('open');
+      }
+    });
+  });
+});
+
 // ===== Trạng thái trực tuyến (Global - chạy trên mọi trang) =====
 (function() {
   var myUserIdEl = document.getElementById("myUserId");
   if (!myUserIdEl) return; // Chưa đăng nhập -> không làm gì
-  
+
   var userId = myUserIdEl.getAttribute("data-id");
   if (!userId) return;
 

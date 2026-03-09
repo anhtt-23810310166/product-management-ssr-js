@@ -16,6 +16,12 @@ module.exports = (app) => {
     // Middleware lấy danh mục cho menu chung
     app.use(categoryMiddleware.categoryMiddleware);
 
+    // Middleware gán path hiện tại cho menu/bottom nav highlight
+    app.use((req, res, next) => {
+        res.locals.currentPath = req.path;
+        next();
+    });
+
     // Middleware xác thực user (gắn res.locals.clientUser nếu đã đăng nhập)
     // Phải chạy TRƯỚC cart middleware để cart có thể gắn userId
     app.use(authMiddleware.authMiddleware);

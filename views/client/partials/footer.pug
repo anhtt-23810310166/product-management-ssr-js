@@ -58,3 +58,29 @@ footer.tz-footer.bg-white.pt-5.pb-3.mt-5.border-top
         p.text-muted.mb-0.tz-footer-copyright &copy; 2026 TechZone. All rights reserved.
       .col-md-6.text-center.text-md-right
         p.text-muted.mb-0.tz-footer-copyright Designed by Electronics Store.
+
+//- Bottom Navigation Bar (Mobile Only)
+.tz-bottom-nav.d-lg-none
+  a.tz-bottom-nav-item(href="/" class=(currentPath == "/" ? "active" : ""))
+    i.fas.fa-home
+    span Trang chủ
+  a.tz-bottom-nav-item(href="/products" class=(currentPath.startsWith("/products") ? "active" : ""))
+    i.fas.fa-store
+    span Sản phẩm
+  a.tz-bottom-nav-item.position-relative(href="/cart" class=(currentPath.startsWith("/cart") ? "active" : ""))
+    i.fas.fa-shopping-cart
+    span Giỏ hàng
+    span.badge.badge-danger#bottomNavCartBadge= cartTotalQuantity || 0
+  a.tz-bottom-nav-item(href="/wishlist" class=(currentPath.startsWith("/wishlist") ? "active" : ""))
+    i.fas.fa-heart
+    span Yêu thích
+    span.badge.badge-danger#bottomNavWishlistBadge= wishlistCount || 0
+  if clientUser
+    a.tz-bottom-nav-item(href="/user/info" class=(currentPath.startsWith("/user") ? "active" : ""))
+      i.fas.fa-user
+      span Tôi
+  else
+    a.tz-bottom-nav-item(href="/user/login" class=(currentPath.startsWith("/user/login") ? "active" : ""))
+      i.fas.fa-user
+      span Tôi
+
