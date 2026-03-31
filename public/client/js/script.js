@@ -99,8 +99,18 @@ document.addEventListener("DOMContentLoaded", function () {
         const actionUrl = form.getAttribute('action');
         const quantityInput = form.querySelector('input[name="quantity"]');
         const quantity = quantityInput ? parseInt(quantityInput.value) : 1;
-        const variantInput = form.querySelector('input[name="variantId"]:checked');
-        const variantId = variantInput ? variantInput.value : "";
+        
+        // Tìm variantId: ưu tiên radio đã chọn, sau đó tới input có tên variantId
+        let variantId = "";
+        const variantInputChecked = form.querySelector('input[name="variantId"]:checked');
+        if (variantInputChecked) {
+          variantId = variantInputChecked.value;
+        } else {
+          const variantInput = form.querySelector('input[name="variantId"]');
+          if (variantInput) {
+            variantId = variantInput.value;
+          }
+        }
 
         fetch(actionUrl, {
           method: 'POST',

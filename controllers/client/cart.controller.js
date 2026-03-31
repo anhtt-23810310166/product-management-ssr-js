@@ -92,19 +92,17 @@ module.exports.addPost = async (req, res) => {
         }
 
         const cart = req.cart;
-        const variantId = req.body.variantId || "";
+        let variantId = req.body.variantId || "";
+
+        // Nếu sản phẩm có biến thể nhưng chưa chọn biến thể -> Tự động chọn biến thể đầu tiên
+        if (product.variants && product.variants.length > 0 && !variantId) {
+            variantId = product.variants[0]._id.toString();
+        }
 
         let variantInfo = null;
         let maxStock = product.stock;
 
-        // Nếu sản phẩm có biến thể nhưng chưa chọn biến thể
-        if (product.variants && product.variants.length > 0 && !variantId) {
-            if (isAjax) return res.json({ success: false, message: "Vui lòng chọn phân loại hàng!" });
-            req.flash("error", "Vui lòng chọn phân loại hàng!");
-            return res.redirect("back");
-        }
-
-        if (variantId && product.variants) {
+        if (variantId && product.variants && product.variants.length > 0) {
             const variant = product.variants.find(v => v._id.toString() === variantId);
             if (!variant) {
                 if (isAjax) return res.json({ success: false, message: "Phân loại không hợp lệ!" });

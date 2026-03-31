@@ -118,24 +118,21 @@ block main
           //- Divider
           hr.my-4
 
-          //- Phân loại (Variants)
-          if product.variants && product.variants.length > 0
-            .mb-4.tz-variants-section
-              h6.font-weight-bold.mb-2
-                | Phân loại hàng:
-              .tz-variant-options.d-flex.flex-wrap(style="gap: 10px;")
-                each variant in product.variants
-                  label.tz-variant-btn.mb-0.position-relative(style="cursor: pointer;")
-                    input(type="radio" name="variantId" value=variant._id class="tz-variant-radio position-absolute" style="opacity: 0;" data-price=variant.price data-stock=variant.stock required)
-                    .tz-variant-label.border.rounded.px-3.py-2.text-center(class="variant-box" style="transition: all 0.2s; user-select: none;")
-                      span.d-block.font-weight-500= variant.name + ": " + variant.value
-
           //- Thêm vào giỏ hàng
           if product.stock > 0
             form#addToCartForm(action=`/cart/add/${product._id}` method="POST")
+              //- Phân loại (Variants) moved inside form
               if product.variants && product.variants.length > 0
-                //- Placeholder for validation script
-                input#selectedVariantId(type="hidden" name="variantId" value="")
+                .mb-4.tz-variants-section
+                  h6.font-weight-bold.mb-2
+                    | Phân loại hàng:
+                  .tz-variant-options.d-flex.flex-wrap(style="gap: 10px;")
+                    each variant in product.variants
+                      label.tz-variant-btn.mb-0.position-relative(style="cursor: pointer;")
+                        input(type="radio" name="variantId" value=variant._id class="tz-variant-radio position-absolute" style="opacity: 0;" data-price=variant.price data-stock=variant.stock required)
+                        .tz-variant-label.border.rounded.px-3.py-2.text-center(class="variant-box" style="transition: all 0.2s; user-select: none;")
+                          span.d-block.font-weight-500= variant.name + ": " + variant.value
+
               .d-flex.align-items-center.mb-4
                 span.text-muted.mr-4.tz-quantity-label Số lượng:
                 .input-group.tz-quantity-input-group
@@ -292,9 +289,6 @@ block main
         if (labelBox) {
           labelBox.classList.add('border-primary', 'text-primary', 'shadow-sm');
         }
-
-        // Update hidden input for form
-        document.getElementById('selectedVariantId').value = this.value;
 
         // Update price display if variant has price > 0
         if (price > 0) {

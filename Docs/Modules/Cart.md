@@ -14,6 +14,8 @@ Quản lý giỏ hàng của khách hàng trước khi tiến hành đặt hàng
 ## Business Rules
 - Số lượng sản phẩm tối thiểu trong giỏ là 1.
 - Nếu thêm sản phẩm đã có trong giỏ, hệ thống tự động cộng dồn số lượng.
+- **Auto-selection:** Đối với các sản phẩm có biến thể, nếu người dùng thêm vào giỏ hàng mà không chọn phân loại (ví dụ: nút thêm nhanh từ trang chủ), hệ thống sẽ tự động chọn biến thể đầu tiên có trong danh sách.
+- **Validation:** Kiểm tra tồn kho của từng biến thể cụ thể trước khi thêm. Nếu vượt quá số lượng tồn kho (hoặc tồn kho Flash Sale), hệ thống sẽ báo lỗi.
 
 ## Data Model
 - `cartId`: Định danh giỏ hàng lưu ở cookie.

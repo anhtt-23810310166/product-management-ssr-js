@@ -38,6 +38,9 @@ mixin productCard(product)
       if product.stock > 0
         form.tz-cart-form(action=`/cart/add/${product._id}` method="POST")
           input(type="hidden" name="quantity" value="1")
+          if product.variants && product.variants.length > 0
+            //- Tự động lấy biến thể đầu tiên nếu thêm nhanh từ trang chủ/danh sách
+            input(type="hidden" name="variantId" value=product.variants[0]._id)
           button.tz-cart-btn(type="submit" title="Thêm vào giỏ hàng")
             i.fas.fa-cart-shopping
             
