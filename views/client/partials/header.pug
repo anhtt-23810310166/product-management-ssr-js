@@ -95,6 +95,8 @@ header.tz-header.sticky-top.bg-white.shadow-sm
                   i.fas.fa-search.text-muted
               input#desktopSearchInput.form-control.border-left-0(type="text" name="keyword" placeholder="Tìm kiếm sản phẩm..." autocomplete="off")
               .input-group-append
+                button.btn.tz-voice-btn#voiceSearchBtn(type="button" onclick="startVoiceSearch('desktopSearchInput')" title="Tìm kiếm bằng giọng nói")
+                  i.fas.fa-microphone
                 button.btn.btn-primary.tz-search-btn(type="submit")
                   i.fas.fa-search.d-lg-none
                   span.d-none.d-lg-inline Tìm
