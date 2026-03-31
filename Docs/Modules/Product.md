@@ -5,9 +5,10 @@ Manages the core entity of the platform: Products. Handles creation, browsing, s
 
 ## Scope
 - Admin: Full CRUD, inventory updates, featured status toggling, soft delete.
-- Client: Catalog browsing, search, category filtering, detail viewing.
+- Client: Catalog browsing, search (including Voice Search), category filtering, detail viewing.
 
 ## Business Logic
+- **Voice Search:** Integrated using Web Speech API (Chrome/Edge support). Allows users to search for products by voice commands in Vietnamese.
 - **Slug Generation:** Automatically generated from the title using `mongoose-slug-updater`. Must be unique.
 - **Discount Calculation:** Price displayed to users is `price * (1 - discountPercentage/100)`.
 - **Stock Management:** Stock is deducted upon order confirmation (or placement, depending on specific ADR).

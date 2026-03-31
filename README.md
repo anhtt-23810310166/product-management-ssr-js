@@ -15,8 +15,8 @@ Hệ thống quản lý sản phẩm và thương mại điện tử toàn diệ
 
 ### 🛍️ Client Side (Trang Người Dùng)
 - **Trang chủ hiện đại**: Banner sống động, Flash Sale đếm ngược, sản phẩm nổi bật & mới nhất.
-- **Bộ lọc thông minh**: Tìm kiếm nâng cao, lọc theo danh mục, thương hiệu, mức giá.
-- **Giỏ hàng & Thanh toán**: Kiểm tra tồn kho thời gian thực, hỗ trợ COD và VNPay (Online Payment).
+- **Bộ lọc thông minh**: Tìm kiếm nâng cao, **Tìm kiếm bằng giọng nói** (Voice Search), lọc theo danh mục, thương hiệu, mức giá.
+- **Giỏ hàng & Thanh toán**: Kiểm tra tồn kho thời gian thực, tự động chọn phân loại hàng khi thêm nhanh, hỗ trợ COD và VNPay.
 - **Hệ thống đánh giá**: Đánh giá sản phẩm theo sao và để lại bình luận thực tế.
 - **Tin tức & Blog**: Cập nhật xu hướng công nghệ và tin tức thị trường.
 - **Chat trực tuyến**: Hỗ trợ khách hàng thời gian thực qua Socket.IO.

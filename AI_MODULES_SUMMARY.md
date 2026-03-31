@@ -31,9 +31,9 @@ Mỗi module được thiết kế theo cấu trúc thư mục rõ ràng. Chi ti
 ### 📦 Nhóm Sản phẩm & Mua sắm (E-Commerce)
 | Module | File Docs Chi Tiết | Controller & Service | Nghiệp Vụ Chính (Business Rules) |
 | :--- | :--- | :--- | :--- |
-| **Product** | `Docs/Modules/Product.md` | `product.*.js` | Quản lý sản phẩm. Giá hiển thị = `price - (price * discountPercentage)`. Xóa mềm. Ảnh lưu trên Cloudinary. |
+| **Product** | `Docs/Modules/Product.md` | `product.*.js` | Quản lý sản phẩm. Hỗ trợ **Tìm kiếm bằng giọng nói** (Voice Search). Giá hiển thị = `price - (price * discountPercentage)`. Xóa mềm. Ảnh lưu trên Cloudinary. |
 | **Category**| `Docs/Modules/ProductCategory.md`| `product-category.*.js` | Danh mục đa cấp (Tree). Cần dùng helper `createTree` để đệ quy danh mục cha-con. |
-| **Cart** | `Docs/Modules/Cart.md` | `cart.*.js` | Quản lý giỏ hàng qua `cartId` (lưu Cookie 30 ngày). Cộng dồn số lượng nếu trùng Product/Variant. |
+| **Cart** | `Docs/Modules/Cart.md` | `cart.*.js` | Quản lý giỏ hàng qua `cartId` (lưu Cookie 30 ngày). **Tự động chọn biến thể đầu tiên** nếu thêm nhanh. Cộng dồn số lượng nếu trùng Product/Variant. |
 | **Order** | `Docs/Modules/Order.md` | `order.*.js` | Checkout từ Cart. **Bắt buộc Snapshot** giá/tên sản phẩm tại thời điểm mua. Trừ stock khi thanh toán. Hỗ trợ VNPAY & COD. |
 | **Marketing**| `Docs/Modules/Marketing.md`| `flash-sale.*`, `discount.*`| Quản lý Flash sale (có startTime/endTime) và Discount code. Có kiểm tra số lượt dùng và số lượng stock riêng cho Flash sale. |
 
