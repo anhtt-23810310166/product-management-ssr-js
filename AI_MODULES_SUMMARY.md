@@ -7,7 +7,8 @@
 ---
 
 ## 1. KIẾN TRÚC IMPLEMENTATION (ARCHITECTURE)
-Hệ thống sử dụng mô hình **MVC + Service Layer** trên nền tảng **Node.js + Express + Pug + MongoDB**.
+Hệ thống sử dụng mô hình **MVC + Service Layer** trên nền tảng **Node.js + Express + Pug + MongoDB + Redis**.
+Dự án được triển khai bằng **Docker** và có luồng **CI/CD** qua GitHub Actions.
 
 *   **Luồng dữ liệu (Data Flow):** `Route` → `Middleware` (Xác thực/Validation Joi) → `Controller` (Nhận Request/Trả Response) → `Service` (Chứa toàn bộ Business Logic/Truy vấn DB) → `Model` (Mongoose Schema) → `Controller` → `View` (Pug Renderer hoặc JSON).
 *   **Phân quyền (RBAC):** Admin phân quyền theo thuộc tính (ví dụ: `products_view`, `orders_edit`). Middleware `requirePermission` sẽ block request nếu không có quyền.
