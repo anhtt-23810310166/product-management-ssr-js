@@ -1,4 +1,4 @@
-name: Node.js CI
+name: Standard CI/CD Pipeline
 
 on:
   push:
@@ -7,21 +7,47 @@ on:
     branches: [ "main", "master" ]
 
 jobs:
-  build:
-
+  # 1. Giai đoạn kiểm tra Code (CI)
+  test-and-lint:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [18.x]
-
     steps:
-    - uses: actions/checkout@v3
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    - run: npm ci
-    - run: npm run build --if-present
-    - run: npm test --if-present
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Tests
+        run: npm test --if-present
+
+  # 2. Giai đoạn kiểm chứng Docker (Build Validation)
+  # Đảm bảo Dockerfile luôn hoạt động tốt, không bị lỗi khi nền tảng (Render) kéo code về build.
+  docker-validation:
+    needs: test-and-lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Test Docker Build
+        run: docker build -t product-management-app .
+
+  # 3. Giai đoạn Kích hoạt Triển khai (Trigger CD cho Vercel/Render)
+  # Chỉ chạy khi 2 bước trên thành công và code nằm ở nhánh master.
+  deploy-trigger:
+    needs: docker-validation
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger PaaS Deployment
+        run: |
+          echo "Hệ thống CI đã pass toàn bộ."
+          echo "Render/Vercel sẽ tự động detect thay đổi trên nhánh master và auto-deploy."
+          # Nếu có Webhook Deploy URL của Render, có thể cấu hình Secret và bật dòng dưới:
+          # curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
