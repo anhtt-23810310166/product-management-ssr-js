@@ -41,12 +41,14 @@ Hệ thống quản lý sản phẩm và thương mại điện tử toàn diệ
 | **Backend** | Node.js, Express.js |
 | **View Engine** | Pug (Jade) |
 | **Database** | MongoDB (Mongoose ODM) |
+| **Cache / Queue**| Redis |
 | **Real-time** | Socket.IO |
 | **Auth** | JWT, Passport.js (Google, Facebook) |
 | **Storage** | Cloudinary, Multer |
 | **Payment** | VNPay Sandbox |
 | **Validation** | Joi |
 | **Utils** | PDFKit (Export PDF), XLSX (Excel Support) |
+| **DevOps** | Docker, Docker Compose, GitHub Actions (CI/CD) |
 
 ---
 
