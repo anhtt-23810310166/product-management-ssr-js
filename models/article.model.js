@@ -13,6 +13,18 @@ const articleSchema = new mongoose.Schema({
         unique: true
     },
     description: String,
+    seoTitle: {
+        type: String,
+        default: ""
+    },
+    seoDescription: {
+        type: String,
+        default: ""
+    },
+    seoKeyword: {
+        type: String,
+        default: ""
+    },
     thumbnail: String,
     status: {
         type: String,

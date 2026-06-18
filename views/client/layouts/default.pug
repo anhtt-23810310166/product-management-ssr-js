@@ -1,7 +1,40 @@
 html
   head
-    title= title
+    if seoTitle
+      title= seoTitle
+    else if title
+      title #{title} | #{settingGeneral ? settingGeneral.websiteName : "TechZone"}
+    else
+      title #{settingSeo && settingSeo.metaTitle ? settingSeo.metaTitle : (settingGeneral ? settingGeneral.websiteName : "TechZone")}
+
     meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
+    
+    //- SEO Tags
+    meta(name="description" content=(seoDescription || (settingSeo && settingSeo.metaDescription ? settingSeo.metaDescription : "Khám phá ngay các sản phẩm công nghệ hàng đầu tại TechZone.")))
+    if seoKeywords
+      meta(name="keywords" content=seoKeywords)
+    else
+      meta(name="keywords" content=(settingSeo && settingSeo.metaKeywords ? settingSeo.metaKeywords : "TechZone, điện thoại, laptop, phụ kiện công nghệ, mua sắm online"))
+
+    //- Open Graph (Facebook/Zalo)
+    meta(property="og:title" content=(seoTitle || title || (settingSeo && settingSeo.metaTitle ? settingSeo.metaTitle : "TechZone")))
+    meta(property="og:description" content=(seoDescription || (settingSeo && settingSeo.metaDescription ? settingSeo.metaDescription : "Khám phá các sản phẩm nổi bật")))
+    if seoImage
+      meta(property="og:image" content=seoImage)
+    else if settingSeo && settingSeo.ogImage
+      meta(property="og:image" content=settingSeo.ogImage)
+    else if settingGeneral && settingGeneral.logo
+      meta(property="og:image" content=settingGeneral.logo)
+    meta(property="og:type" content="website")
+
+    //- Google Analytics (GA4)
+    if settingSeo && settingSeo.googleAnalyticsId
+      script(async src=`https://www.googletagmanager.com/gtag/js?id=${settingSeo.googleAnalyticsId}`)
+      script.
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '#{settingSeo.googleAnalyticsId}');
     link(rel="stylesheet", href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous")
     link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css")
     link(rel="preconnect" href="https://fonts.googleapis.com")
@@ -53,3 +86,4 @@ html
     //- Swiper JS
     script(src="https://unpkg.com/swiper/swiper-bundle.min.js")
     script(src="/client/js/script.js")
+    script(src="/client/js/recently-viewed.js")

@@ -5,8 +5,12 @@ include ../mixins/menu-category.pug
 .tz-mobile-menu#mobileMenu
   .tz-mobile-menu-header
     a.tz-logo.d-flex.align-items-center.text-decoration-none(href="/")
-      i.fas.fa-bolt.mr-2
-      span TechZone
+      if settingGeneral && settingGeneral.logo
+        img(src=settingGeneral.logo alt=(settingGeneral.websiteName || "TechZone") style="max-height: 40px;")
+        span.ml-2= settingGeneral.websiteName
+      else
+        i.fas.fa-bolt.mr-2
+        span= (settingGeneral ? settingGeneral.websiteName : "TechZone")
     button.tz-mobile-menu-close#mobileMenuClose(onclick="toggleMobileMenu()")
       i.fas.fa-times
 
@@ -83,8 +87,13 @@ header.tz-header.sticky-top.bg-white.shadow-sm
           button.tz-mobile-menu-btn.d-lg-none(type="button" onclick="toggleMobileMenu()")
             i.fas.fa-bars
           a.tz-logo.d-none.d-lg-flex.align-items-center.text-decoration-none(href="/")
-            i.fas.fa-bolt.text-primary.mr-2.tz-logo-icon
-            span.font-weight-bold.text-dark.tz-logo-text TechZone
+            if settingGeneral && settingGeneral.logo
+              img.tz-logo-icon(src=settingGeneral.logo alt=(settingGeneral.websiteName || "TechZone") style="max-height: 40px;")
+              if settingGeneral.websiteName
+                span.font-weight-bold.text-dark.tz-logo-text.ml-2= settingGeneral.websiteName
+            else
+              i.fas.fa-bolt.text-primary.mr-2.tz-logo-icon
+              span.font-weight-bold.text-dark.tz-logo-text= (settingGeneral ? settingGeneral.websiteName : "TechZone")
 
         //- Cột Thanh tìm kiếm (Desktop & Mobile)
         .col-lg-5.col.px-2.px-lg-3

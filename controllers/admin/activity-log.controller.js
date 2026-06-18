@@ -1,3 +1,7 @@
+const filterStatusHelper = require("../../helpers/filterStatus");
+const searchHelper = require("../../helpers/search");
+const sortHelper = require("../../helpers/sort");
+const createLog = require("../../helpers/activityLog");
 const ActivityLog = require("../../models/activity-log.model");
 const paginationHelper = require("../../helpers/pagination");
 const systemConfig = require("../../config/system");
@@ -26,13 +30,22 @@ module.exports.index = async (req, res) => {
             find.accountFullName = regex;
         }
 
+        // Sort
+        const sortOptions = [
+            { value: "createdAt-desc", label: "Mới nhất" },
+            { value: "createdAt-asc", label: "Cũ nhất" }
+        ];
+        const objectSort = sortHelper(req.query, sortOptions);
+        // Default sort to latest if not specified
+        const sort = Object.keys(objectSort.sortObject).length > 0 ? objectSort.sortObject : { createdAt: -1 };
+
         // Pagination
         const totalItems = await ActivityLog.countDocuments(find);
         const objectPagination = paginationHelper(req.query, totalItems, 20);
 
         // Query với .lean() cho performance
         const logs = await ActivityLog.find(find)
-            .sort({ createdAt: -1 })
+            .sort(sort)
             .skip(objectPagination.skip)
             .limit(objectPagination.limitItems)
             .lean();
@@ -84,7 +97,8 @@ module.exports.index = async (req, res) => {
             currentModule: req.query.module || "",
             currentAction: req.query.action || "",
             moduleLabels: moduleLabels,
-            actionLabels: actionLabels
+            actionLabels: actionLabels,
+            sortOptions: sortOptions
         });
     } catch (error) {
         console.log(error);

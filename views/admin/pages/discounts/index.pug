@@ -1,5 +1,10 @@
 extends ../../layouts/default.pug
 include ../../mixins/page-header.pug
+include ../../mixins/search.pug
+include ../../mixins/filter-status.pug
+include ../../mixins/sort.pug
+include ../../mixins/pagination.pug
+include ../../mixins/batch-actions.pug
 
 block main
   div(data-crud=`${prefixAdmin}/discounts` data-entity-name="mã giảm giá" style="display:none")
@@ -8,11 +13,26 @@ block main
       i.fas.fa-plus.mr-2
       | Thêm mã giảm giá
 
+  //- Filter bar
+  .admin-filter-bar.mb-4
+    .row.align-items-center
+      +search(keyword)
+      +filter-status(filterStatus)
+      +sort(sortOptions)
+      .col-md-2
+        .d-flex.gap-2
+          if userPermissions && (userPermissions.includes("discounts_edit") || userPermissions.includes("discounts_delete") || userPermissions.includes("discounts_change-status"))
+            +batch-actions()
+
+  //- Discounts Table
   .admin-table-wrapper
     if discounts && discounts.length > 0
       table.admin-table
         thead
           tr
+            if userPermissions && (userPermissions.includes("discounts_edit") || userPermissions.includes("discounts_delete") || userPermissions.includes("discounts_change-status"))
+              th.col-check
+                input.form-check-input(type="checkbox" id="checkAll")
             th.col-stt STT
             th.col-title Mã giảm giá
             th Loại
@@ -24,7 +44,10 @@ block main
         tbody
           each discount, index in discounts
             tr.animate-in
-              td.col-stt= index + 1
+              if userPermissions && (userPermissions.includes("discounts_edit") || userPermissions.includes("discounts_delete") || userPermissions.includes("discounts_change-status"))
+                td.col-check
+                  input.form-check-input.checkbox-item(type="checkbox" name="id" value=discount._id)
+              td.col-stt= pagination.skip + index + 1
               td.col-title
                 .product-title-cell
                   span.product-name= discount.code
@@ -74,3 +97,9 @@ block main
         a.btn.btn-add-product(href=`${prefixAdmin}/discounts/create`)
           i.fas.fa-plus.mr-2
           | Thêm mã giảm giá
+
+  //- Pagination
+  +pagination(pagination)
+
+block append scripts
+  script(src="/admin/js/admin-crud.js")

@@ -13,6 +13,8 @@ Manages the core entity of the platform: Products. Handles creation, browsing, s
 - **Discount Calculation:** Price displayed to users is `price * (1 - discountPercentage/100)`.
 - **Stock Management:** Stock is deducted upon order confirmation (or placement, depending on specific ADR).
 - **Featured Products:** Handled via a boolean flag, used to display items on the homepage.
+- **Recently Viewed Products:** Handled via client-side `localStorage`. Stores up to 20 recently viewed product IDs and fetches full product details via `GET /products/by-ids`. Displayed on Product Detail and Home pages.
+- **SEO Analyzer:** Tích hợp công cụ phân tích và chấm điểm SEO tự động theo thời gian thực tại màn hình Admin (Thêm/Sửa). Đánh giá dựa trên độ dài thẻ meta và sự hiện diện của Từ khóa chính (Focus Keyword).
 
 ## Business Rules
 - A product must belong to at least one category (optional but recommended).

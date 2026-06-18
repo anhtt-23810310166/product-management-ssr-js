@@ -1,6 +1,7 @@
 extends ../../layouts/default.pug
 include ../../mixins/page-header.pug
 include ../../mixins/search.pug
+include ../../mixins/sort.pug
 include ../../mixins/pagination.pug
 
 block main
@@ -11,6 +12,7 @@ block main
   .admin-filter-bar.mb-4
     .row.align-items-center
       +search(keyword)
+      +sort(sortOptions)
 
       //- Rating Filter
       .col-md-4

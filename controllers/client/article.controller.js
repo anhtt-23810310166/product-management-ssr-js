@@ -111,6 +111,9 @@ module.exports.detail = async (req, res) => {
 
         res.render("client/pages/articles/detail", {
             title: article.title,
+            seoTitle: article.seoTitle || article.title,
+            seoDescription: article.seoDescription || (article.description ? article.description.replace(/<[^>]*>?/gm, '').substring(0, 160) : ""),
+            seoImage: article.thumbnail,
             article,
             relatedArticles
         });

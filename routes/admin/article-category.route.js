@@ -10,6 +10,7 @@ router.get("/create", auth.requirePermission("article-category_create"), control
 router.post("/create", auth.requirePermission("article-category_create"), upload.single("thumbnail"), controller.createPost);
 router.get("/edit/:id", auth.requirePermission("article-category_edit"), controller.edit);
 router.patch("/edit/:id", auth.requirePermission("article-category_edit"), upload.single("thumbnail"), controller.editPatch);
+router.patch("/change-multi", auth.requirePermission("article-category_edit"), controller.changeMulti);
 router.patch("/change-status/:status/:id", auth.requirePermission("article-category_change-status"), controller.changeStatus);
 router.delete("/delete/:id", auth.requirePermission("article-category_delete"), controller.delete);
 

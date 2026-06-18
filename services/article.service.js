@@ -38,9 +38,11 @@ class ArticleService extends BaseService {
 
         // Cập nhật các trường
         article.title = data.title;
+        article.seoTitle = data.seoTitle;
+        article.seoDescription = data.seoDescription;
+        article.seoKeyword = data.seoKeyword || "";
         article.article_category_id = data.article_category_id || "";
-        article.content = data.content;
-        article.shortDescription = data.shortDescription;
+        article.description = data.description;
         article.status = data.status;
         article.position = data.position;
         if (data.thumbnail) article.thumbnail = data.thumbnail;

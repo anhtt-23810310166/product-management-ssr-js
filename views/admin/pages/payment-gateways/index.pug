@@ -1,0 +1,81 @@
+extends ../../layouts/default.pug
+include ../../mixins/page-header.pug
+include ../../mixins/search.pug
+include ../../mixins/filter-status.pug
+include ../../mixins/sort.pug
+include ../../mixins/pagination.pug
+include ../../mixins/batch-actions.pug
+
+block main
+  div(data-crud=`${prefixAdmin}/settings/payment-gateways`)
+    +pageHeader("Quản lý cổng thanh toán", "Bật tắt các phương thức thanh toán online")
+      .d-flex.align-items-center.gap-2
+        if userPermissions && userPermissions.includes("payment-gateways_create")
+          a.btn-add-product(href=`${prefixAdmin}/settings/payment-gateways/create`)
+            i.fas.fa-plus.mr-2
+            | Thêm cổng thanh toán
+
+  .admin-filter-bar.mb-4
+    .row.align-items-center
+      +filter-status(filterStatus)
+      +search(keyword)
+      +sort(sortOptions)
+      .col-md-2
+        .d-flex.gap-2
+          if userPermissions && (userPermissions.includes("payment-gateways_edit") || userPermissions.includes("payment-gateways_delete") || userPermissions.includes("payment-gateways_change-status"))
+            +batch-actions()
+
+  .admin-table-wrapper
+    if records && records.length > 0
+      table.admin-table
+        thead
+          tr
+            if userPermissions && (userPermissions.includes("payment-gateways_edit") || userPermissions.includes("payment-gateways_delete") || userPermissions.includes("payment-gateways_change-status"))
+              th.col-check
+                input.form-check-input(type="checkbox" id="checkAll")
+            th.col-stt STT
+            th.col-title Tên Cổng
+            th.col-code API Key / App ID
+            th.col-desc Endpoint
+            th.col-status Trạng thái
+        tbody
+          each item, index in records
+            tr.animate-in
+              if userPermissions && (userPermissions.includes("payment-gateways_edit") || userPermissions.includes("payment-gateways_delete") || userPermissions.includes("payment-gateways_change-status"))
+                td.col-check
+                  input.form-check-input.checkbox-item(type="checkbox" name="id" value=item.id)
+              td.col-stt #{index + 1}
+              td.col-title 
+                .product-title-cell
+                  span.product-name #{item.name}
+                  span.product-meta Mã: #{item.code}
+                .product-hover-actions
+                  if userPermissions && userPermissions.includes("payment-gateways_edit")
+                    a.hover-action-link.hover-action-edit(href=`${prefixAdmin}/settings/payment-gateways/edit/${item.id}`) Sửa
+                  if userPermissions && userPermissions.includes("payment-gateways_change-status")
+                    if item.status === "active"
+                      a.hover-action-link.hover-action-status.btn-change-status(href="javascript:void(0)" data-id=item.id data-status="active") Đã tắt
+                    else
+                      a.hover-action-link.hover-action-status.btn-change-status(href="javascript:void(0)" data-id=item.id data-status="inactive") Đang bật
+                  if userPermissions && userPermissions.includes("payment-gateways_delete")
+                    a.hover-action-link.hover-action-danger(href="javascript:void(0)" data-id=item.id) Xoá
+              td.col-code 
+                code #{item.appId || "N/A"}
+                br
+                span.product-meta #{item.secretKey1 ? (item.secretKey1.substring(0, 10) + '***') : "N/A"}
+              td.col-desc #{item.endpoint || "Mặc định"}
+              td.col-status
+                if item.status === "active"
+                  span.status-badge.status-active Đang bật
+                else
+                  span.status-badge.status-inactive Đã tắt
+    else
+      .admin-empty-state
+        i.fas.fa-university
+        h4 Chưa có cổng thanh toán nào
+        p Hệ thống chưa tích hợp cổng thanh toán nào
+
+  +pagination(pagination)
+
+block append scripts
+  script(src="/admin/js/admin-crud.js")

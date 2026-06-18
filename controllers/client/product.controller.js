@@ -314,6 +314,9 @@ module.exports.detail = async (req, res) => {
 
         res.render("client/pages/products/detail", {
             title: product.title,
+            seoTitle: product.seoTitle || product.title,
+            seoDescription: product.seoDescription || (product.description ? product.description.replace(/<[^>]*>?/gm, '').substring(0, 160) : ""),
+            seoImage: product.thumbnail,
             product: product,
             brand: brand,
             reviews: reviews,

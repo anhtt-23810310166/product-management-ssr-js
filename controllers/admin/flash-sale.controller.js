@@ -8,7 +8,14 @@ const createLog = require("../../helpers/activityLog");
 // [GET] /admin/flash-sale
 module.exports.index = async (req, res) => {
     try {
-        const result = await flashSaleService.list(req.query);
+        const sortOptions = [
+            { value: "createdAt-desc", label: "Mới nhất" },
+            { value: "createdAt-asc", label: "Cũ nhất" },
+            { value: "title-asc", label: "Tên A - Z" },
+            { value: "title-desc", label: "Tên Z - A" }
+        ];
+
+        const result = await flashSaleService.list(req.query, { sortOptions });
         const flashSales = result.items;
         
         const now = new Date();
@@ -177,6 +184,33 @@ module.exports.changeStatus = async (req, res) => {
         res.json({ code: 200, message: "Cập nhật trạng thái thành công!" });
     } catch (error) {
         res.json({ code: 400, message: "Cập nhật thất bại!" });
+    }
+}
+
+// [PATCH] /admin/flash-sale/change-multi
+module.exports.changeMulti = async (req, res) => {
+    try {
+        const { ids, type } = req.body;
+        const { count } = await flashSaleService.changeMulti(ids, type);
+
+        if (count > 0) {
+            createLog(req, res, {
+                action: "change-multi",
+                module: "flash-sale",
+                description: `Thao tác hàng loạt [${type}] trên ${count} Flash Sale`
+            });
+        }
+
+        res.json({
+            code: 200,
+            message: count > 0 ? "Cập nhật thành công!" : "Không có thay đổi nào!",
+            count: count
+        });
+    } catch (error) {
+        if (error.message === "INVALID_ACTION") {
+            return res.json({ code: 400, message: "Hành động không hợp lệ!" });
+        }
+        res.json({ code: 400, message: "Có lỗi xảy ra!" });
     }
 }
 

@@ -36,7 +36,6 @@ block main
     .col-lg-4
       .admin-form-card.mb-4
         h6.form-label.mb-3
-          i.fas.fa-chart-bar.mr-2
           | Thống kê
         .mb-3
           .text-muted.mb-1(style="font-size: 0.78rem") Số bài viết
@@ -48,7 +47,6 @@ block main
       if childCategories && childCategories.length > 0
         .admin-form-card.mb-4
           h6.form-label.mb-3
-            i.fas.fa-sitemap.mr-2
             | Danh mục con (#{childCategories.length})
           each child in childCategories
             .d-flex.align-items-center.py-2(style="border-bottom: 1px solid var(--border-color)")
@@ -63,7 +61,6 @@ block main
 
       .admin-form-card
         h6.form-label.mb-3
-          i.fas.fa-cog.mr-2
           | Hành động
         .d-flex.flex-column(style="gap: 8px")
           a.btn-submit.text-center(href=`${prefixAdmin}/article-category/edit/${category._id}`)

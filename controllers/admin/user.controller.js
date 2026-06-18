@@ -192,3 +192,30 @@ module.exports.deleteUser = async (req, res) => {
         res.json({ code: 400, message: "Lỗi xóa khách hàng!" });
     }
 };
+
+// [PATCH] /admin/users/change-multi
+module.exports.changeMulti = async (req, res) => {
+    try {
+        const { ids, type } = req.body;
+        const { count } = await userService.changeMulti(ids, type);
+
+        if (count > 0) {
+            createLog(req, res, {
+                action: "change-multi",
+                module: "users",
+                description: `Thao tác hàng loạt [${type}] trên ${count} khách hàng`
+            });
+        }
+
+        res.json({
+            code: 200,
+            message: count > 0 ? "Cập nhật thành công!" : "Không có thay đổi nào!",
+            count: count
+        });
+    } catch (error) {
+        if (error.message === "INVALID_ACTION") {
+            return res.json({ code: 400, message: "Hành động không hợp lệ!" });
+        }
+        res.json({ code: 400, message: "Có lỗi xảy ra!" });
+    }
+};

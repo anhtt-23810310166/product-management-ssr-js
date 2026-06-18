@@ -206,3 +206,35 @@
     dropdown.classList.remove("open");
   });
 })();
+
+// SEO Character Checker
+(function () {
+  var seoInputs = document.querySelectorAll(".seo-input");
+  if (!seoInputs.length) return;
+
+  seoInputs.forEach(function (input) {
+    var max = parseInt(input.getAttribute("data-max"));
+    var countId = input.getAttribute("data-count-id");
+    var countSpan = document.getElementById(countId);
+
+    if (!countSpan) return;
+
+    var checkLength = function () {
+      var currentLength = input.value.length;
+      countSpan.textContent = " (" + currentLength + "/" + max + ")";
+      if (currentLength > max) {
+        countSpan.style.color = "red";
+        countSpan.style.fontWeight = "bold";
+      } else {
+        countSpan.style.color = "";
+        countSpan.style.fontWeight = "normal";
+      }
+    };
+
+    // Initial check
+    checkLength();
+
+    // Event listener
+    input.addEventListener("input", checkLength);
+  });
+})();

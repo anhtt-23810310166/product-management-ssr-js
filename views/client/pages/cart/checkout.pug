@@ -29,6 +29,12 @@ block main
                 input(type="hidden" name="customerName" value=defaultAddress.fullName)
                 input(type="hidden" name="customerPhone" value=defaultAddress.phone)
                 input(type="hidden" name="customerAddress" value=defaultAddress.address)
+                if clientUser && clientUser.email
+                  input(type="hidden" name="customerEmail" value=clientUser.email)
+                else
+                  .form-group
+                    label.font-weight-500(for="customerEmail") Email nhận hóa đơn *
+                    input.form-control#customerEmail(type="email" name="customerEmail" required placeholder="Nhập email để nhận hóa đơn" class="tz-auto-d90f81")
 
                 .form-group
                   label.font-weight-500(for="customerNote") Ghi chú (Tùy chọn)
@@ -52,6 +58,10 @@ block main
                 .form-group
                   label.font-weight-500(for="customerPhone") Số điện thoại *
                   input.form-control#customerPhone(type="tel" name="customerPhone" required placeholder="Nhập số điện thoại" class="tz-auto-d90f81")
+
+                .form-group
+                  label.font-weight-500(for="customerEmail") Email nhận hóa đơn *
+                  input.form-control#customerEmail(type="email" name="customerEmail" required placeholder="Nhập email để nhận hóa đơn" class="tz-auto-d90f81")
 
                 .form-group
                   label.font-weight-500(for="customerAddress") Địa chỉ nhận hàng *
@@ -82,6 +92,14 @@ block main
                     .tz-payment-info
                       span.tz-payment-name Thanh toán online qua VNPAY
                       span.tz-payment-desc Hỗ trợ ATM nội địa, Visa, MasterCard, JCB, QR Pay
+
+                .tz-payment-option
+                  input#paymentZalopay(type="radio" name="paymentMethod" value="zalopay")
+                  label(for="paymentZalopay")
+                    img(src="https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-ZaloPay-Square.png" alt="ZaloPay" onerror="this.src='https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-ZaloPay-Square.png'")
+                    .tz-payment-info
+                      span.tz-payment-name Thanh toán online qua ZaloPay
+                      span.tz-payment-desc Hỗ trợ ví ZaloPay, thẻ ATM, Visa, MasterCard
 
               //- Hidden input mã giảm giá
               input#discountCodeInput(type="hidden" name="discountCode" value="")

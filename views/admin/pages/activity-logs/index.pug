@@ -1,6 +1,7 @@
 extends ../../layouts/default.pug
 include ../../mixins/page-header.pug
 include ../../mixins/pagination.pug
+include ../../mixins/sort.pug
 
 block main
   +pageHeader("Nhật ký hoạt động", "Lịch sử thao tác của nhân viên trên hệ thống")
@@ -13,27 +14,25 @@ block main
           i.fas.fa-search
           input.form-control#searchKeyword(type="text" placeholder="Tìm nhân viên..." value=keyword)
 
-      .col-md-3.mb-2.mb-md-0
+      .col-md-2.mb-2.mb-md-0
         select.form-control.admin-select#filterModule
           option(value="" selected=(currentModule === "")) -- Tất cả module --
           each label, key in moduleLabels
             option(value=key selected=(currentModule === key))= label
 
-      .col-md-3.mb-2.mb-md-0
+      .col-md-2.mb-2.mb-md-0
         select.form-control.admin-select#filterAction
           option(value="" selected=(currentAction === "")) -- Tất cả hành động --
           each label, key in actionLabels
             option(value=key selected=(currentAction === key))= label
 
-      .col-md-3
-        .d-flex.gap-2
-          button.btn.btn-add-product#btnFilter
-            i.fas.fa-filter.me-1
-            | Lọc
-          if keyword || currentModule || currentAction
-            a.btn.btn-outline-secondary(href=`${prefixAdmin}/activity-logs`)
-              i.fas.fa-times.me-1
-              | Xoá lọc
+      +sort(sortOptions)
+
+      .col-md-2.mb-2.mb-md-0
+        .d-flex.align-items-center
+          button.btn.btn-add-product.mr-2#btnFilter Lọc
+          if keyword || currentModule || currentAction || sortOptions
+            a.btn.btn-outline-secondary(href=`${prefixAdmin}/activity-logs`) Xoá lọc
 
   //- Log Table
   .admin-table-wrapper

@@ -14,9 +14,11 @@ Hệ thống quản lý sản phẩm và thương mại điện tử toàn diệ
 ## 🌟 Tính Năng Cốt Lõi
 
 ### 🛍️ Client Side (Trang Người Dùng)
-- **Trang chủ hiện đại**: Banner sống động, Flash Sale đếm ngược, sản phẩm nổi bật & mới nhất.
+- **Trang chủ hiện đại**: Banner sống động, Flash Sale đếm ngược, sản phẩm nổi bật & mới nhất, kèm lịch sử sản phẩm đã xem.
 - **Bộ lọc thông minh**: Tìm kiếm nâng cao, **Tìm kiếm bằng giọng nói** (Voice Search), lọc theo danh mục, thương hiệu, mức giá.
-- **Giỏ hàng & Thanh toán**: Kiểm tra tồn kho thời gian thực, tự động chọn phân loại hàng khi thêm nhanh, hỗ trợ COD và VNPay.
+- **Khám phá sản phẩm**: Hỗ trợ lịch sử xem sản phẩm (Recently Viewed) giúp cá nhân hóa trải nghiệm.
+- **Giỏ hàng & Thanh toán**: Kiểm tra tồn kho thời gian thực, tự động chọn phân loại hàng khi thêm nhanh, hỗ trợ COD, VNPay và **ZaloPay**. Hệ thống tự động gửi **Email xác nhận đơn hàng** sau khi thanh toán thành công.
+- **Chuẩn hóa SEO (Tối ưu hóa tìm kiếm)**: Tự động render các thẻ meta nâng cao (title, description, keywords, OpenGraph) cho sản phẩm và bài viết để tối ưu hiển thị khi chia sẻ trên mạng xã hội.
 - **Hệ thống đánh giá**: Đánh giá sản phẩm theo sao và để lại bình luận thực tế.
 - **Tin tức & Blog**: Cập nhật xu hướng công nghệ và tin tức thị trường.
 - **Chat trực tuyến**: Hỗ trợ khách hàng thời gian thực qua Socket.IO.
@@ -25,6 +27,9 @@ Hệ thống quản lý sản phẩm và thương mại điện tử toàn diệ
 ### 🛡️ Admin Side (Trang Quản Trị)
 - **Dashboard tổng quan**: Thống kê doanh thu, đơn hàng, người dùng bằng biểu đồ trực quan.
 - **Quản lý Sản phẩm**: CRUD sản phẩm, danh mục đa cấp (Recursive Tree), thương hiệu.
+- **Cài đặt Hệ thống**: Cấu hình chung thông tin Website và cấu hình giao diện linh hoạt cho Trang chủ (Hero Banner, Banner dọc, Features Bar).
+- **Quản lý SEO & Tracking**: Hệ thống cho phép cấu hình SEO tổng thể (Title, Description, Keywords, OpenGraph mặc định), quản lý linh hoạt nội dung `robots.txt` và tự động gắn mã theo dõi **Google Analytics 4 (GA4)** trên toàn bộ Client.
+- **Trợ lý SEO Tự động (SEO Analyzer)**: Tích hợp công cụ phân tích và chấm điểm SEO thời gian thực (real-time) cho sản phẩm và bài viết. Kiểm tra 6 tiêu chí chuẩn SEO (mật độ từ khóa, độ dài thẻ meta).
 - **Chiến dịch Flash Sale**: Tạo và lên lịch các chương trình giảm giá giới hạn thời gian.
 - **Quản lý Đơn hàng**: Theo dõi chi tiết và cập nhật trạng thái vận chuyển linh hoạt.
 - **Quản lý Nội dung**: Kiểm soát bài viết blog, tin tức và danh mục tin tức.

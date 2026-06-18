@@ -10,6 +10,7 @@ Quản lý nội dung tin tức, blog hoặc các bài viết hướng dẫn tr�
 ## Business Logic
 - **Phân loại:** Bài viết gắn liền với `ArticleCategory`.
 - **Nổi bật:** Các bài viết có `featured: true` thường được ưu tiên hiển thị ở trang chủ hoặc thanh bên.
+- **SEO Analyzer:** Tích hợp công cụ phân tích và chấm điểm SEO tự động theo thời gian thực tại màn hình Admin (Thêm/Sửa). Đánh giá mật độ từ khóa và độ dài thẻ meta để đảm bảo chuẩn SEO.
 
 ## Business Rules
 - Bài viết hỗ trợ định dạng HTML (TinyMCE) cho phần mô tả.

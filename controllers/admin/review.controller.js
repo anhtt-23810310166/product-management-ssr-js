@@ -1,6 +1,7 @@
 const Review = require("../../models/review.model");
 const Product = require("../../models/product.model");
 const searchHelper = require("../../helpers/search");
+const sortHelper = require("../../helpers/sort");
 const paginationHelper = require("../../helpers/pagination");
 const systemConfig = require("../../config/system");
 const prefixAdmin = systemConfig.prefixAdmin;
@@ -23,12 +24,24 @@ module.exports.index = async (req, res) => {
             find.rating = parseInt(req.query.rating);
         }
 
+        // Sort
+        const sortOptions = [
+            { value: "createdAt-desc", label: "Mới nhất" },
+            { value: "createdAt-asc", label: "Cũ nhất" },
+            { value: "rating-desc", label: "Sao cao nhất" },
+            { value: "rating-asc", label: "Sao thấp nhất" }
+        ];
+        const objectSort = sortHelper(req.query, sortOptions);
+        const sort = Object.keys(objectSort.sortObject).length > 0
+            ? objectSort.sortObject
+            : { createdAt: -1 };
+
         // Pagination
         const totalItems = await Review.countDocuments(find);
         const objectPagination = paginationHelper(req.query, totalItems, 20);
 
         const reviews = await Review.find(find)
-            .sort({ createdAt: -1 })
+            .sort(sort)
             .skip(objectPagination.skip)
             .limit(objectPagination.limitItems);
 
@@ -49,6 +62,7 @@ module.exports.index = async (req, res) => {
             reviews: reviews,
             productMap: productMap,
             keyword: objectSearch.keyword,
+            sortOptions: objectSort.sortOptions,
             pagination: objectPagination,
             selectedRating: req.query.rating || ""
         });

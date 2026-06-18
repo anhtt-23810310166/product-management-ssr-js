@@ -8,6 +8,8 @@ const {
     calculateCartTotal
 } = require("../../helpers/product");
 const vnpayHelper = require("../../helpers/vnpay");
+const zalopayHelper = require("../../helpers/zalopay");
+const sendMailHelper = require("../../helpers/sendMail");
 const discountService = require("../../services/discount.service");
 const { calculateShippingFee, getProvinceList } = require("../../helpers/shipping");
 const loyalty = require("../../helpers/loyalty");
@@ -408,9 +410,9 @@ module.exports.checkoutPost = async (req, res) => {
             return res.redirect("/cart");
         }
 
-        const { customerName, customerPhone, customerAddress, customerNote, buyNowItemId } = req.body;
+        const { customerName, customerPhone, customerAddress, customerEmail, customerNote, buyNowItemId } = req.body;
 
-        if (!customerName || !customerPhone || !customerAddress) {
+        if (!customerName || !customerPhone || !customerAddress || !customerEmail) {
             req.flash("error", "Vui lòng điền đầy đủ thông tin!");
             const redirectUrl = buyNowItemId ? `/cart/checkout?itemId=${buyNowItemId}` : "/cart/checkout";
             return res.redirect(redirectUrl);
@@ -533,6 +535,7 @@ module.exports.checkoutPost = async (req, res) => {
         const order = new Order({
             userId: res.locals.clientUser ? res.locals.clientUser.id : "",
             customerName,
+            customerEmail,
             customerPhone,
             customerAddress,
             customerNote: customerNote || "",
@@ -560,7 +563,7 @@ module.exports.checkoutPost = async (req, res) => {
             { $pull: { items: { _id: { $in: itemsToCheckout.map(item => item._id) } } } }
         );
 
-        // Xử lý VNPay redirect hoặc render COD success
+        // Xử lý VNPay / ZaloPay redirect hoặc render COD success
         if (paymentMethod === "vnpay") {
             // Lấy IP client
             const ipAddr = req.headers['x-forwarded-for'] ||
@@ -569,12 +572,27 @@ module.exports.checkoutPost = async (req, res) => {
                 req.connection.socket.remoteAddress || "127.0.0.1";
 
             const vnpayInfo = vnpayHelper.createPaymentUrl(order.id, totalAmount, ipAddr);
-
-            // Lưu txnRef vào đơn hàng để đối chiếu
             await Order.updateOne({ _id: order.id }, { vnpayTransactionNo: vnpayInfo.txnRef });
-
             return res.redirect(vnpayInfo.paymentUrl);
+        } else if (paymentMethod === "zalopay") {
+            const zpayInfo = await zalopayHelper.createPaymentUrl(order.id, totalAmount, "Thanh toan don hang", customerName);
+            if (zpayInfo) {
+                await Order.updateOne({ _id: order.id }, { vnpayTransactionNo: zpayInfo.appTransId }); // Dùng chung field cho tiện lưu vết
+                return res.redirect(zpayInfo.paymentUrl);
+            } else {
+                req.flash("error", "Lỗi khởi tạo thanh toán ZaloPay, đơn hàng sẽ chuyển sang COD.");
+                await Order.updateOne({ _id: order.id }, { paymentMethod: "cod" });
+            }
         }
+
+        // Gửi email xác nhận (Nếu là COD hoặc lỗi thanh toán online chuyển sang COD)
+        const emailHtml = `
+            <h3>Cảm ơn ${customerName} đã đặt hàng tại TechZone!</h3>
+            <p>Mã đơn hàng: <strong>#${order._id.toString().slice(-8).toUpperCase()}</strong></p>
+            <p>Tổng tiền: <strong>${grandTotal.toLocaleString('vi-VN')}₫</strong> (Thanh toán khi nhận hàng)</p>
+            <p>Chúng tôi sẽ sớm liên hệ với bạn để xác nhận đơn hàng.</p>
+        `;
+        sendMailHelper.sendMail(customerEmail, `[TechZone] Xác nhận đơn hàng #${order._id.toString().slice(-8).toUpperCase()}`, emailHtml);
 
         res.render("client/pages/cart/checkout-success", {
             title: "Đặt hàng thành công",
@@ -646,6 +664,17 @@ module.exports.vnpayReturn = async (req, res) => {
                     { paymentStatus: "paid" }
                 );
 
+                // Gửi email xác nhận
+                const emailHtml = `
+                    <h3>Cảm ơn ${order.customerName} đã đặt hàng tại TechZone!</h3>
+                    <p>Mã đơn hàng: <strong>#${order._id.toString().slice(-8).toUpperCase()}</strong></p>
+                    <p>Tổng tiền: <strong>${order.totalAmount.toLocaleString('vi-VN')}₫</strong> (Đã thanh toán qua VNPay)</p>
+                    <p>Đơn hàng của bạn đang được xử lý.</p>
+                `;
+                if (order.customerEmail) {
+                    sendMailHelper.sendMail(order.customerEmail, `[TechZone] Xác nhận đơn hàng #${order._id.toString().slice(-8).toUpperCase()} (Đã thanh toán)`, emailHtml);
+                }
+
                 res.render("client/pages/cart/checkout-success", {
                     title: "Đặt hàng thành công",
                     order,
@@ -686,4 +715,67 @@ module.exports.getShippingFee = (req, res) => {
 // [GET] /cart/provinces  - trả về danh sách tỉnh cho autocomplete
 module.exports.getProvinces = (req, res) => {
     res.json({ code: 200, provinces: getProvinceList() });
+};
+// [GET] /cart/zalopay-return
+module.exports.zalopayReturn = async (req, res) => {
+    try {
+        let reqQuery = req.query;
+
+        // Verify MAC
+        const isValid = zalopayHelper.verifyReturnUrl(reqQuery);
+        
+        if (!isValid) {
+            req.flash("error", "Tham số không hợp lệ. Sai checksum ZaloPay!");
+            return res.redirect("/");
+        }
+
+        const apptransid = reqQuery.apptransid;
+        const status = parseInt(reqQuery.status);
+
+        // Tìm đơn hàng
+        const order = await Order.findOne({ vnpayTransactionNo: apptransid });
+
+        if (!order) {
+            req.flash("error", "Không tìm thấy đơn hàng!");
+            return res.redirect("/");
+        }
+
+        if (status === 1) {
+            // Thanh toán thành công
+            await Order.updateOne(
+                { _id: order.id },
+                { paymentStatus: "paid" }
+            );
+
+            // Gửi email xác nhận
+            const emailHtml = `
+                <h3>Cảm ơn ${order.customerName} đã đặt hàng tại TechZone!</h3>
+                <p>Mã đơn hàng: <strong>#${order._id.toString().slice(-8).toUpperCase()}</strong></p>
+                <p>Tổng tiền: <strong>${order.totalAmount.toLocaleString('vi-VN')}₫</strong> (Đã thanh toán qua ZaloPay)</p>
+                <p>Đơn hàng của bạn đang được xử lý.</p>
+            `;
+            if (order.customerEmail) {
+                sendMailHelper.sendMail(order.customerEmail, `[TechZone] Xác nhận đơn hàng #${order._id.toString().slice(-8).toUpperCase()} (Đã thanh toán ZaloPay)`, emailHtml);
+            }
+
+            res.render("client/pages/cart/checkout-success", {
+                title: "Đặt hàng thành công",
+                order,
+                paymentMessage: "Thanh toán ZaloPay thành công!"
+            });
+        } else {
+            // Thanh toán thất bại -> Hủy/Pending
+            await Order.updateOne(
+                { _id: order.id },
+                { status: "cancelled", paymentStatus: "unpaid" }
+            );
+
+            req.flash("error", "Thanh toán ZaloPay thất bại hoặc đã bị hủy!");
+            res.redirect("/cart/checkout");
+        }
+    } catch (error) {
+        console.log("ZaloPay return error: ", error);
+        req.flash("error", "Có lỗi xảy ra khi xác nhận thanh toán ZaloPay!");
+        res.redirect("/");
+    }
 };

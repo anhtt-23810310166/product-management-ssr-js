@@ -7,10 +7,27 @@ const createLog = require("../../helpers/activityLog");
 // [GET] /admin/discounts
 module.exports.index = async (req, res) => {
     try {
-        const discounts = await Discount.find({ deleted: false }).sort({ createdAt: -1 });
+        const sortOptions = [
+            { value: "createdAt-desc", label: "Mới nhất" },
+            { value: "createdAt-asc", label: "Cũ nhất" },
+            { value: "code-asc", label: "Mã A - Z" },
+            { value: "code-desc", label: "Mã Z - A" }
+        ];
+
+        const result = await discountService.list(req.query, { sortOptions });
+
         res.render("admin/pages/discounts/index", {
             pageTitle: "Mã giảm giá",
-            discounts
+            currentPage: "discounts",
+            breadcrumbs: [
+                { title: "Bán hàng" },
+                { title: "Mã giảm giá" }
+            ],
+            discounts: result.items,
+            filterStatus: result.filterStatus,
+            keyword: result.keyword,
+            sortOptions: result.sortOptions,
+            pagination: result.pagination
         });
     } catch (error) {
         console.error("DISCOUNT INDEX ERROR:", error);
@@ -124,6 +141,33 @@ module.exports.deleteDiscount = async (req, res) => {
 
         res.json({ code: 200, message: "Xóa mã giảm giá thành công!" });
     } catch (error) {
+        res.json({ code: 400, message: "Có lỗi xảy ra!" });
+    }
+};
+
+// [PATCH] /admin/discounts/change-multi
+module.exports.changeMulti = async (req, res) => {
+    try {
+        const { ids, type } = req.body;
+        const { count } = await discountService.changeMulti(ids, type);
+
+        if (count > 0) {
+            createLog(req, res, {
+                action: "change-multi",
+                module: "discounts",
+                description: `Thao tác hàng loạt [${type}] trên ${count} mã giảm giá`
+            });
+        }
+
+        res.json({
+            code: 200,
+            message: count > 0 ? "Cập nhật thành công!" : "Không có thay đổi nào!",
+            count: count
+        });
+    } catch (error) {
+        if (error.message === "INVALID_ACTION") {
+            return res.json({ code: 400, message: "Hành động không hợp lệ!" });
+        }
         res.json({ code: 400, message: "Có lỗi xảy ra!" });
     }
 };

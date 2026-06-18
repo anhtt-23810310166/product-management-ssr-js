@@ -4,8 +4,13 @@ footer.tz-footer.bg-white.pt-5.pb-3.mt-5.border-top
       //- Cột 1: Thông tin
       .col-lg-3.col-md-6.mb-4
         a.tz-logo.d-flex.align-items-center.text-decoration-none.mb-3(href="/")
-          i.fas.fa-bolt.text-primary.mr-2.tz-footer-logo-icon
-          span.font-weight-bold.text-dark.tz-footer-logo-text TechZone
+          if settingGeneral && settingGeneral.logo
+            img.tz-footer-logo-icon.mr-2(src=settingGeneral.logo alt=(settingGeneral.websiteName || "TechZone") style="max-height: 40px;")
+            if settingGeneral.websiteName
+              span.font-weight-bold.text-dark.tz-footer-logo-text= settingGeneral.websiteName
+          else
+            i.fas.fa-bolt.text-primary.mr-2.tz-footer-logo-icon
+            span.font-weight-bold.text-dark.tz-footer-logo-text= (settingGeneral ? settingGeneral.websiteName : "TechZone")
         p.text-muted.tz-footer-desc Hệ thống bán lẻ thiết bị công nghệ uy tín hàng đầu. Cam kết sản phẩm chính hãng, bảo hành tin cậy, dịch vụ tận tâm.
         .tz-socials.mt-3
           a.btn.btn-outline-light.btn-sm.rounded-circle.mr-2.text-dark.border(href="#")
@@ -29,7 +34,7 @@ footer.tz-footer.bg-white.pt-5.pb-3.mt-5.border-top
         
         div.mb-3
           p.text-muted.mb-0.tz-footer-title-sm Mua hàng
-          div.font-weight-bold.tz-footer-hotline 1800.1234
+          div.font-weight-bold.tz-footer-hotline= (settingGeneral && settingGeneral.phone ? settingGeneral.phone : "1800.1234")
           span.text-muted.tz-footer-hotline-time (7:30 - 22:00)
 
         div
@@ -55,7 +60,7 @@ footer.tz-footer.bg-white.pt-5.pb-3.mt-5.border-top
     //- Bản quyền dưới cùng
     .row.align-items-center
       .col-md-6.text-center.text-md-left
-        p.text-muted.mb-0.tz-footer-copyright &copy; 2026 TechZone. All rights reserved.
+        p.text-muted.mb-0.tz-footer-copyright!= (settingGeneral && settingGeneral.copyright ? settingGeneral.copyright : "&copy; 2026 TechZone. All rights reserved.")
       .col-md-6.text-center.text-md-right
         p.text-muted.mb-0.tz-footer-copyright Designed by Electronics Store.
 

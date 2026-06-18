@@ -1,5 +1,10 @@
 extends ../../layouts/default.pug
 include ../../mixins/page-header.pug
+include ../../mixins/search.pug
+include ../../mixins/filter-status.pug
+include ../../mixins/sort.pug
+include ../../mixins/pagination.pug
+include ../../mixins/batch-actions.pug
 
 block main
   div(data-crud=`${prefixAdmin}/flash-sale` data-entity-name="chương trình" style="display:none")
@@ -9,11 +14,26 @@ block main
         i.fas.fa-plus.mr-2
         | Tạo Flash Sale
 
+  //- Filter bar
+  .admin-filter-bar.mb-4
+    .row.align-items-center
+      +search(keyword)
+      +filter-status(filterStatus)
+      +sort(sortOptions)
+      .col-md-2
+        .d-flex.gap-2
+          if userPermissions && (userPermissions.includes("flash-sale_edit") || userPermissions.includes("flash-sale_delete") || userPermissions.includes("flash-sale_change-status"))
+            +batch-actions()
+
+  //- Flash Sale Table
   .admin-table-wrapper
     if flashSales && flashSales.length > 0
       table.admin-table
         thead
           tr
+            if userPermissions && (userPermissions.includes("flash-sale_edit") || userPermissions.includes("flash-sale_delete") || userPermissions.includes("flash-sale_change-status"))
+              th.col-check
+                input.form-check-input(type="checkbox" id="checkAll")
             th.col-stt STT
             th.col-title Tên chương trình
             th Thời gian
@@ -23,7 +43,10 @@ block main
         tbody
           each sale, index in flashSales
             tr.animate-in
-              td.col-stt= index + 1
+              if userPermissions && (userPermissions.includes("flash-sale_edit") || userPermissions.includes("flash-sale_delete") || userPermissions.includes("flash-sale_change-status"))
+                td.col-check
+                  input.form-check-input.checkbox-item(type="checkbox" name="id" value=sale._id)
+              td.col-stt= pagination.skip + index + 1
               td.col-title
                 .product-title-cell
                   span.product-name= sale.title
@@ -73,3 +96,9 @@ block main
           a.btn.btn-add-product(href=`${prefixAdmin}/flash-sale/create`)
             i.fas.fa-plus.mr-2
             | Tạo Flash Sale
+
+  //- Pagination
+  +pagination(pagination)
+
+block append scripts
+  script(src="/admin/js/admin-crud.js")

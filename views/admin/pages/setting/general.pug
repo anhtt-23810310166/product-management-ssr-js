@@ -1,0 +1,240 @@
+extends ../../layouts/default.pug
+include ../../mixins/page-header.pug
+
+block main
+  +pageHeader("Thông tin Website", "Cấu hình chung website & Trang chủ")
+
+  .admin-form-card
+    form(
+      action=`${prefixAdmin}/settings/general?_method=PATCH`
+      method="POST"
+      enctype="multipart/form-data"
+    )
+      .form-row
+        .form-col
+          h6.mb-4(style="font-size: 1.1rem; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 10px;") Thông tin chung
+          
+          .form-group
+            label.form-label Tên website
+            input.form-input(
+              type="text"
+              name="websiteName"
+              value=(settingGeneral ? settingGeneral.websiteName : "")
+              placeholder="Nhập tên website"
+            )
+            
+          .form-group(upload-image)
+            label.form-label Logo
+            .upload-area
+              input.upload-input(
+                type="file"
+                name="logo"
+                accept="image/*"
+                upload-image-input
+              )
+              .upload-placeholder(class=(settingGeneral && settingGeneral.logo ? "d-none" : ""))
+                i.fas.fa-cloud-upload-alt
+                p Kéo thả hoặc click để chọn ảnh
+              img.upload-preview(
+                src=(settingGeneral ? settingGeneral.logo : "")
+                upload-image-preview
+                class=(settingGeneral && settingGeneral.logo ? "" : "d-none")
+                style="max-height: 100px; display: block; margin: 10px auto;"
+              )
+              
+          .form-group
+            label.form-label Số điện thoại
+            input.form-input(
+              type="text"
+              name="phone"
+              value=(settingGeneral ? settingGeneral.phone : "")
+              placeholder="Ví dụ: 1800.1234"
+            )
+            
+          .form-group
+            label.form-label Email
+            input.form-input(
+              type="email"
+              name="email"
+              value=(settingGeneral ? settingGeneral.email : "")
+              placeholder="Ví dụ: contact@techzone.vn"
+            )
+            
+          .form-group
+            label.form-label Địa chỉ
+            input.form-input(
+              type="text"
+              name="address"
+              value=(settingGeneral ? settingGeneral.address : "")
+              placeholder="Nhập địa chỉ"
+            )
+            
+          .form-group
+            label.form-label Copyright
+            input.form-input(
+              type="text"
+              name="copyright"
+              value=(settingGeneral ? settingGeneral.copyright : "")
+              placeholder="Ví dụ: &copy; 2026 TechZone. All rights reserved."
+            )
+
+        .form-col
+          h6.mb-4(style="font-size: 1.1rem; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 10px;") Cấu hình Hero Banner (Trang chủ)
+          
+          .form-group(upload-image)
+            label.form-label Ảnh nền Hero Banner
+            .upload-area
+              input.upload-input(
+                type="file"
+                name="heroBannerImage"
+                accept="image/*"
+                upload-image-input
+              )
+              input(type="hidden" name="heroBannerCurrentImage" value=(settingGeneral && settingGeneral.heroBanner ? settingGeneral.heroBanner.image : ""))
+              .upload-placeholder(class=(settingGeneral && settingGeneral.heroBanner && settingGeneral.heroBanner.image ? "d-none" : ""))
+                i.fas.fa-cloud-upload-alt
+                p Click để chọn ảnh nền
+              img.upload-preview(
+                src=(settingGeneral && settingGeneral.heroBanner ? settingGeneral.heroBanner.image : "")
+                upload-image-preview
+                class=(settingGeneral && settingGeneral.heroBanner && settingGeneral.heroBanner.image ? "" : "d-none")
+                style="max-height: 150px; display: block; margin: 10px auto; border-radius: 8px;"
+              )
+              
+          .form-group
+            label.form-label Tiêu đề
+            input.form-input(
+              type="text"
+              name="heroBannerTitle"
+              value=(settingGeneral && settingGeneral.heroBanner ? settingGeneral.heroBanner.title : "")
+              placeholder="Ví dụ: iPhone 15 Pro Max"
+            )
+            
+          .form-group
+            label.form-label Mô tả
+            textarea.form-input.form-textarea(
+              name="heroBannerDesc"
+              rows="3"
+              placeholder="Nhập mô tả banner..."
+            )= settingGeneral && settingGeneral.heroBanner ? settingGeneral.heroBanner.desc : ""
+            
+          .form-row-inline
+            .form-group.form-group-half
+              label.form-label Text nút bấm
+              input.form-input(
+                type="text"
+                name="heroBannerButtonText"
+                value=(settingGeneral && settingGeneral.heroBanner ? settingGeneral.heroBanner.buttonText : "")
+                placeholder="Ví dụ: Mua ngay"
+              )
+            .form-group.form-group-half
+              label.form-label Link nút bấm
+              input.form-input(
+                type="text"
+                name="heroBannerButtonLink"
+                value=(settingGeneral && settingGeneral.heroBanner ? settingGeneral.heroBanner.buttonLink : "")
+                placeholder="Ví dụ: /products"
+              )
+
+      .form-row(style="margin-top: 30px;")
+        .form-col(style="width: 100%")
+          h6.mb-4(style="font-size: 1.1rem; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 10px;") Đặc điểm nổi bật (Features Bar)
+          .row
+            - for (let i = 0; i < 4; i++)
+              .col-12.col-md-6.col-xl-3.mb-4
+                .p-3(style="border: 1px solid var(--border-color); border-radius: var(--card-radius); background: var(--bg-light);")
+                  h6.mb-3(style="font-size: 0.9rem; font-weight: 600;") Feature #{i + 1}
+                  .form-group
+                    label.form-label Icon class
+                    input.form-input(
+                      type="text"
+                      name=`featureIcon${i}`
+                      value=(settingGeneral && settingGeneral.features && settingGeneral.features[i] ? settingGeneral.features[i].icon : "")
+                      placeholder="vd: fas fa-shield-alt"
+                    )
+                  .form-group
+                    label.form-label Tiêu đề
+                    input.form-input(
+                      type="text"
+                      name=`featureTitle${i}`
+                      value=(settingGeneral && settingGeneral.features && settingGeneral.features[i] ? settingGeneral.features[i].title : "")
+                    )
+                  .form-group
+                    label.form-label Mô tả ngắn
+                    input.form-input(
+                      type="text"
+                      name=`featureDesc${i}`
+                      value=(settingGeneral && settingGeneral.features && settingGeneral.features[i] ? settingGeneral.features[i].desc : "")
+                    )
+
+      .form-row(style="margin-top: 10px;")
+        .form-col(style="width: 100%")
+          h6.mb-4(style="font-size: 1.1rem; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 10px;") Banner dọc (Double Banners)
+          .row
+            - for (let i = 0; i < 2; i++)
+              .col-12.col-md-6.mb-4
+                .p-3(style="border: 1px solid var(--border-color); border-radius: var(--card-radius); background: var(--bg-light);")
+                  h6.mb-3(style="font-size: 0.9rem; font-weight: 600;") Banner #{i + 1}
+                  
+                  .form-group(upload-image)
+                    label.form-label Ảnh Banner
+                    .upload-area
+                      input.upload-input(
+                        type="file"
+                        name=`doubleBannerImage${i}`
+                        accept="image/*"
+                        upload-image-input
+                      )
+                      input(type="hidden" name=`doubleBannerCurrentImage${i}` value=(settingGeneral && settingGeneral.doubleBanners && settingGeneral.doubleBanners[i] ? settingGeneral.doubleBanners[i].image : ""))
+                      .upload-placeholder(class=(settingGeneral && settingGeneral.doubleBanners && settingGeneral.doubleBanners[i] && settingGeneral.doubleBanners[i].image ? "d-none" : ""))
+                        i.fas.fa-images
+                        p Click để tải ảnh lên
+                      img.upload-preview(
+                        src=(settingGeneral && settingGeneral.doubleBanners && settingGeneral.doubleBanners[i] ? settingGeneral.doubleBanners[i].image : "")
+                        upload-image-preview
+                        class=(settingGeneral && settingGeneral.doubleBanners && settingGeneral.doubleBanners[i] && settingGeneral.doubleBanners[i].image ? "" : "d-none")
+                        style="max-height: 120px; display: block; margin: 10px auto; border-radius: 4px;"
+                      )
+                      
+                  .form-row-inline
+                    .form-group.form-group-half
+                      label.form-label Badge (Nhãn)
+                      input.form-input(
+                        type="text"
+                        name=`doubleBannerBadge${i}`
+                        value=(settingGeneral && settingGeneral.doubleBanners && settingGeneral.doubleBanners[i] ? settingGeneral.doubleBanners[i].badge : "")
+                        placeholder="vd: GAMING GEAR"
+                      )
+                    .form-group.form-group-half
+                      label.form-label Tiêu đề
+                      input.form-input(
+                        type="text"
+                        name=`doubleBannerTitle${i}`
+                        value=(settingGeneral && settingGeneral.doubleBanners && settingGeneral.doubleBanners[i] ? settingGeneral.doubleBanners[i].title : "")
+                      )
+                      
+                  .form-row-inline
+                    .form-group.form-group-half
+                      label.form-label Text nút bấm
+                      input.form-input(
+                        type="text"
+                        name=`doubleBannerButtonText${i}`
+                        value=(settingGeneral && settingGeneral.doubleBanners && settingGeneral.doubleBanners[i] ? settingGeneral.doubleBanners[i].buttonText : "")
+                        placeholder="vd: Khám phá ngay"
+                      )
+                    .form-group.form-group-half
+                      label.form-label Link nút bấm
+                      input.form-input(
+                        type="text"
+                        name=`doubleBannerLink${i}`
+                        value=(settingGeneral && settingGeneral.doubleBanners && settingGeneral.doubleBanners[i] ? settingGeneral.doubleBanners[i].link : "")
+                        placeholder="vd: /products"
+                      )
+
+      .form-actions
+        button.btn-submit(type="submit")
+          i.fas.fa-save
+          |  Cập nhật thông tin
+
+block append scripts
+  script(src="/admin/js/upload-preview.js")

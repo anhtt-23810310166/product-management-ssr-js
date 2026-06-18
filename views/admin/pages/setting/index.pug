@@ -8,7 +8,7 @@ block main
   .settings-section
     .settings-section-title Cài đặt chung
     .settings-grid
-      a.settings-card(href="#")
+      a.settings-card(href=`${prefixAdmin}/settings/general`)
         .settings-card-icon.icon-info
           i.fas.fa-info-circle
         .settings-card-content
@@ -36,12 +36,6 @@ block main
           .settings-card-title Tỉnh thành
           .settings-card-desc Quản lý tỉnh thành, quận huyện
 
-      a.settings-card(href="#")
-        .settings-card-icon.icon-contact
-          i.fas.fa-address-book
-        .settings-card-content
-          .settings-card-title Form liên hệ
-          .settings-card-desc Quản lý thông tin form liên hệ
 
       a.settings-card(href="#")
         .settings-card-icon.icon-attributes
@@ -64,19 +58,7 @@ block main
           .settings-card-title Mã nhúng
           .settings-card-desc Google Tag, Facebook Pixel, chat widget
 
-      a.settings-card(href="#")
-        .settings-card-icon.icon-seo
-          i.fas.fa-search
-        .settings-card-content
-          .settings-card-title SEO
-          .settings-card-desc Meta title, description, sitemap, robots.txt
 
-      a.settings-card(href="#")
-        .settings-card-icon.icon-media
-          i.fas.fa-images
-        .settings-card-content
-          .settings-card-title Quản lý Media
-          .settings-card-desc Cấu hình lưu trữ hình ảnh, file tải lên
 
   //- Section: Danh mục
   .settings-section
@@ -101,25 +83,11 @@ block main
     .settings-section-title Bán hàng
     .settings-grid
       a.settings-card(href="#")
-        .settings-card-icon.icon-product
-          i.fas.fa-box
-        .settings-card-content
-          .settings-card-title Sản phẩm
-          .settings-card-desc Đơn vị tính, biến thể, đánh giá
-
-      a.settings-card(href="#")
         .settings-card-icon.icon-inventory
           i.fas.fa-warehouse
         .settings-card-content
           .settings-card-title Kho hàng
           .settings-card-desc Quản lý kho, tồn kho, nhập xuất
-
-      a.settings-card(href="#")
-        .settings-card-icon.icon-order
-          i.fas.fa-shopping-bag
-        .settings-card-content
-          .settings-card-title Đơn hàng
-          .settings-card-desc Trạng thái đơn, quy trình xử lý
 
       a.settings-card(href="#")
         .settings-card-icon.icon-print
@@ -142,7 +110,7 @@ block main
           .settings-card-title Vận chuyển
           .settings-card-desc Phí ship, vùng giao hàng, freeship
 
-      a.settings-card(href="#")
+      a.settings-card(href=`${prefixAdmin}/settings/shipping-carriers`)
         .settings-card-icon.icon-carrier
           i.fas.fa-shipping-fast
         .settings-card-content
@@ -168,20 +136,6 @@ block main
     .settings-section-title Khuyến mãi
     .settings-grid
       a.settings-card(href="#")
-        .settings-card-icon.icon-coupon
-          i.fas.fa-ticket-alt
-        .settings-card-content
-          .settings-card-title Mã giảm giá
-          .settings-card-desc Quản lý coupon, voucher
-
-      a.settings-card(href="#")
-        .settings-card-icon.icon-promotion
-          i.fas.fa-gift
-        .settings-card-content
-          .settings-card-title Chương trình khuyến mãi
-          .settings-card-desc Flash sale, combo, mua X tặng Y
-
-      a.settings-card(href="#")
         .settings-card-icon.icon-loyalty
           i.fas.fa-star
         .settings-card-content
@@ -199,7 +153,7 @@ block main
           .settings-card-title Tiền tệ
           .settings-card-desc Đơn vị tiền tệ, tỷ giá
 
-      a.settings-card(href="#")
+      a.settings-card(href=`${prefixAdmin}/settings/payment-gateways`)
         .settings-card-icon.icon-payment
           i.fas.fa-university
         .settings-card-content

@@ -6,7 +6,10 @@ block main
       .checkout-success-icon
         i.fas.fa-check-circle
       h2.checkout-success-title Đặt hàng thành công!
+      if paymentMessage
+        p.checkout-success-desc.text-success.font-weight-bold= paymentMessage
       p.checkout-success-desc Cảm ơn bạn đã mua hàng. Đơn hàng của bạn đang được xử lý.
+      p.checkout-success-desc Một email xác nhận hóa đơn đã được gửi tới hòm thư của bạn.
 
       if order
         .checkout-success-info

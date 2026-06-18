@@ -1,0 +1,117 @@
+extends ../../layouts/default.pug
+include ../../mixins/page-header.pug
+
+block main
+  +pageHeader("Cấu hình SEO", "Quản lý thẻ Meta, Open Graph và Robots.txt toàn cục")
+
+  .admin-form-card
+    form(
+      action=`${prefixAdmin}/settings/seo?_method=PATCH`
+      method="POST"
+      enctype="multipart/form-data"
+    )
+      .form-row
+        .form-col
+          //- Cấu hình Meta Tags
+          .admin-form-group-card.mb-4.p-3.border.rounded(style="background-color: #f8f9fa;")
+            h6.mb-4(style="font-size: 1.1rem; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 10px;")
+              | Meta Tags (Mặc định)
+            
+            .form-group
+              label.form-label Meta Title (Tiêu đề SEO)
+                span.seo-count#seoTitleCount(style="font-size: 12px; margin-left: 5px; font-weight: normal;")  (0/60)
+              input.form-input.seo-input(
+                type="text"
+                name="metaTitle"
+                id="seoTitle"
+                value=(settingSeo ? settingSeo.metaTitle : "")
+                placeholder="Tiêu đề trang hiển thị trên Google..."
+                data-max="60"
+                data-count-id="seoTitleCount"
+              )
+              .form-text Fallback khi trang không có Title riêng.
+              
+            .form-group
+              label.form-label Meta Description (Mô tả SEO)
+                span.seo-count#seoDescCount(style="font-size: 12px; margin-left: 5px; font-weight: normal;")  (0/160)
+              textarea.form-input.form-textarea.seo-input(
+                name="metaDescription"
+                id="seoDescription"
+                rows="3"
+                placeholder="Mô tả trang hiển thị trên Google..."
+                data-max="160"
+                data-count-id="seoDescCount"
+              )= (settingSeo ? settingSeo.metaDescription : "")
+              .form-text Fallback khi trang không có Description riêng.
+              
+            .form-group
+              label.form-label Meta Keywords (Từ khóa)
+              input.form-input(
+                type="text"
+                name="metaKeywords"
+                value=(settingSeo ? settingSeo.metaKeywords : "")
+                placeholder="VD: điện thoại, phụ kiện, TechZone..."
+              )
+
+          //- Cấu hình Google Analytics & Robots.txt
+          .admin-form-group-card.mb-3.p-3.border.rounded
+            h6.mb-4(style="font-size: 1.1rem; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 10px;")
+              | Nâng cao (Analytics & Robots.txt)
+            
+            .form-group
+              label.form-label Google Analytics ID
+              input.form-input(
+                type="text"
+                name="googleAnalyticsId"
+                value=(settingSeo ? settingSeo.googleAnalyticsId : "")
+                placeholder="VD: G-XXXXXXXXXX"
+              )
+              .form-text Mã theo dõi GA4 (Thẻ script sẽ được tự động chèn vào trang).
+              
+            .form-group.mt-3
+              label.form-label Nội dung file robots.txt
+              textarea.form-input.form-textarea(
+                name="robotsTxt"
+                rows="4"
+                placeholder="User-agent: *\nAllow: /"
+                style="font-family: monospace;"
+              )= (settingSeo ? settingSeo.robotsTxt : "")
+              .form-text Nội dung này sẽ được xuất ra tại 
+                a(href="/robots.txt" target="_blank") /robots.txt
+
+        .form-col.form-col-side
+          //- Cấu hình Open Graph
+          .admin-form-group-card.p-3.border.rounded(style="background-color: #f0f8ff;")
+            h6.mb-4(style="font-size: 1.1rem; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 10px;")
+              | Open Graph Image
+            
+            .form-group
+              label.form-label Ảnh OG Mặc định (Facebook/Zalo)
+              .upload-area#uploadArea
+                input.upload-input(
+                  type="file"
+                  name="ogImage"
+                  id="uploadFile"
+                  accept="image/*"
+                )
+                if settingSeo && settingSeo.ogImage
+                  .upload-placeholder#uploadPlaceholder(style="display:none")
+                    i.fas.fa-cloud-upload-alt
+                    p Kéo thả hoặc click để chọn ảnh
+                  img.upload-preview#uploadPreview(src=settingSeo.ogImage alt="OG Preview" style="display:block")
+                else
+                  .upload-placeholder#uploadPlaceholder
+                    i.fas.fa-cloud-upload-alt
+                    p Kéo thả hoặc click để chọn ảnh
+                    span.upload-hint Kích thước khuyên dùng: 1200x630px
+                  img.upload-preview#uploadPreview(src="" alt="Preview")
+              .form-text.mt-2 Ảnh này sẽ hiển thị khi chia sẻ link trang chủ hoặc link không có ảnh cụ thể.
+
+      .form-actions
+        a.btn-cancel(href=`${prefixAdmin}/settings`) Quay lại
+        button.btn-submit(type="submit")
+          i.fas.fa-save
+          |  Lưu cấu hình SEO
+
+block append scripts
+  script(src="/admin/js/upload-preview.js")

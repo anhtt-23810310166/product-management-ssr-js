@@ -5,6 +5,7 @@ const brandRoutes = require("./brand.route");
 const articleRoutes = require("./article.route");
 const articleCategoryRoutes = require("./article-category.route");
 const settingRoutes = require("./setting.route");
+const settingSeoRoutes = require("./setting-seo.route");
 const roleRoutes = require("./role.route");
 const accountRoutes = require("./account.route");
 const authRoutes = require("./auth.route");
@@ -16,6 +17,8 @@ const chatRoutes = require("./chat.route");
 const reviewRoutes = require("./review.route");
 const flashSaleRoutes = require("./flash-sale.route");
 const discountRoutes = require("./discount.route");
+const shippingCarrierRoutes = require("./shipping-carrier.route");
+const paymentGatewayRoutes = require("./payment-gateway.route");
 
 const authMiddleware = require("../../middlewares/admin/auth.middleware");
 
@@ -26,6 +29,11 @@ module.exports = (app) => {
     app.use(PATH_ADMIN, (req, res, next) => {
         res.locals.prefixAdmin = PATH_ADMIN;
         next();
+    });
+
+    // Chuyển hướng /admin sang /admin/dashboard
+    app.get(PATH_ADMIN, (req, res) => {
+        res.redirect(`${PATH_ADMIN}/dashboard`);
     });
 
     // ===== Route Public (không cần đăng nhập) =====
@@ -44,6 +52,13 @@ module.exports = (app) => {
         `${PATH_ADMIN}/settings`,
         authMiddleware.requirePermission("settings_view"),
         settingRoutes
+    );
+
+    // Cấu hình SEO - cần quyền settings_view
+    app.use(
+        `${PATH_ADMIN}/settings/seo`,
+        authMiddleware.requirePermission("settings_view"),
+        settingSeoRoutes
     );
 
     // Quản lý sản phẩm - cần quyền products_view
@@ -135,5 +150,19 @@ module.exports = (app) => {
         `${PATH_ADMIN}/discounts`,
         authMiddleware.requirePermission("discounts_view"),
         discountRoutes
+    );
+
+    // Quản lý hãng vận chuyển - cần quyền shipping-carriers_view
+    app.use(
+        `${PATH_ADMIN}/settings/shipping-carriers`,
+        authMiddleware.requirePermission("shipping-carriers_view"),
+        shippingCarrierRoutes
+    );
+
+    // Quản lý cổng thanh toán - cần quyền payment-gateways_view
+    app.use(
+        `${PATH_ADMIN}/settings/payment-gateways`,
+        authMiddleware.requirePermission("payment-gateways_view"),
+        paymentGatewayRoutes
     );
 }

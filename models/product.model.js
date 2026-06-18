@@ -17,6 +17,18 @@ const productSchema = new mongoose.Schema({
         unique: true
     },
     description: String,
+    seoTitle: {
+        type: String,
+        default: ""
+    },
+    seoDescription: {
+        type: String,
+        default: ""
+    },
+    seoKeyword: {
+        type: String,
+        default: ""
+    },
     price: Number,
     discountPercentage: Number,
     stock: Number,

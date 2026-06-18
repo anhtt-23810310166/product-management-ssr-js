@@ -4,6 +4,7 @@ include ../../mixins/search.pug
 include ../../mixins/filter-status.pug
 include ../../mixins/sort.pug
 include ../../mixins/pagination.pug
+include ../../mixins/batch-actions.pug
 
 block main
   div(data-crud=`${prefixAdmin}/users` data-entity-name="khách hàng" style="display:none")
@@ -15,6 +16,9 @@ block main
       +search(keyword)
       +filter-status(filterStatus)
       +sort(sortOptions)
+      .col-md-2
+        .d-flex.gap-2
+          +batch-actions()
 
   //- Users Table
   .admin-table-wrapper
@@ -22,6 +26,8 @@ block main
       table.admin-table
         thead
           tr
+            th.col-check
+              input.form-check-input(type="checkbox" id="checkAll")
             th.col-stt STT
             th.col-img Avatar
             th.col-title Họ tên
@@ -32,6 +38,8 @@ block main
         tbody
           each user, index in users
             tr.animate-in
+              td.col-check
+                input.form-check-input.checkbox-item(type="checkbox" name="id" value=user._id)
               td.col-stt= pagination.skip + index + 1
               td.col-img
                 if user.avatar

@@ -241,3 +241,47 @@ module.exports.delete = async (req, res) => {
         res.json({ code: 400, message: "Xóa danh mục thất bại!" });
     }
 };
+
+// [PATCH] /admin/article-category/change-multi
+module.exports.changeMulti = async (req, res) => {
+    try {
+        const { ids, type } = req.body;
+        let count = 0;
+
+        switch (type) {
+            case "active":
+            case "inactive":
+                const updateStatus = await ArticleCategory.updateMany({ _id: { $in: ids } }, { status: type });
+                count = updateStatus.modifiedCount;
+                break;
+            case "delete":
+                const updateDelete = await ArticleCategory.updateMany({ _id: { $in: ids } }, { deleted: true, deletedAt: new Date() });
+                count = updateDelete.modifiedCount;
+                break;
+            case "change-position":
+                for (const item of ids) {
+                    const result = await ArticleCategory.updateOne({ _id: item.id }, { position: parseInt(item.position) });
+                    count += result.modifiedCount;
+                }
+                break;
+            default:
+                return res.json({ code: 400, message: "Hành động không hợp lệ!" });
+        }
+
+        if (count > 0) {
+            createLog(req, res, {
+                action: "change-multi",
+                module: "article-category",
+                description: `Thao tác hàng loạt [${type}] trên ${count} danh mục bài viết`
+            });
+        }
+
+        res.json({
+            code: 200,
+            message: count > 0 ? "Cập nhật thành công!" : "Không có thay đổi nào!",
+            count: count
+        });
+    } catch (error) {
+        res.json({ code: 400, message: "Có lỗi xảy ra!" });
+    }
+};

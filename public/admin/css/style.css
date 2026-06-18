@@ -2765,6 +2765,12 @@ body.admin-page {
   box-shadow: 0 0 0 3px rgba(62, 151, 255, 0.12);
 }
 
+.form-text {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
 .p-4 {
   padding: 24px;
 }

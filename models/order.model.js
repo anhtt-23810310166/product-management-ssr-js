@@ -12,6 +12,10 @@ const orderSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    customerEmail: {
+        type: String,
+        default: ""
+    },
     customerPhone: {
         type: String,
         required: true
@@ -69,7 +73,7 @@ const orderSchema = new mongoose.Schema({
     paymentMethod: {
         type: String,
         default: "cod",
-        enum: ["cod", "vnpay"]
+        enum: ["cod", "vnpay", "zalopay"]
     },
     paymentStatus: {
         type: String,

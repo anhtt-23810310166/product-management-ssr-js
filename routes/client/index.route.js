@@ -7,6 +7,8 @@ const chatRoutes = require("./chat.route");
 const orderRoutes = require("./order.route");
 const reviewRoutes = require("./review.route");
 const wishlistRoutes = require("./wishlist.route");
+const sitemapController = require("../../controllers/client/sitemap.controller");
+const robotsController = require("../../controllers/client/robots.controller");
 
 const categoryMiddleware = require("../../middlewares/client/category.middleware");
 const cartMiddleware = require("../../middlewares/client/cart.middleware");
@@ -46,4 +48,8 @@ module.exports = (app) => {
     app.use("/reviews", reviewRoutes);
 
     app.use("/wishlist", wishlistRoutes);
+
+    app.get("/sitemap.xml", sitemapController.index);
+
+    app.get("/robots.txt", robotsController.index);
 }

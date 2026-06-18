@@ -143,6 +143,28 @@ const systemConfig = (app) => {
                 { label: "Xem", action: "view" },
                 { label: "Xóa", action: "delete" }
             ]
+        },
+        {
+            label: "Hãng vận chuyển",
+            name: "shipping-carriers",
+            permissions: [
+                { label: "Xem", action: "view" },
+                { label: "Thêm mới", action: "create" },
+                { label: "Chỉnh sửa", action: "edit" },
+                { label: "Xóa", action: "delete" },
+                { label: "Đổi trạng thái", action: "change-status" }
+            ]
+        },
+        {
+            label: "Cổng thanh toán",
+            name: "payment-gateways",
+            permissions: [
+                { label: "Xem", action: "view" },
+                { label: "Thêm mới", action: "create" },
+                { label: "Chỉnh sửa", action: "edit" },
+                { label: "Xóa", action: "delete" },
+                { label: "Đổi trạng thái", action: "change-status" }
+            ]
         }
     ];
 };

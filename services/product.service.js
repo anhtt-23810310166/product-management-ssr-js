@@ -42,6 +42,9 @@ class ProductService extends BaseService {
         }
 
         product.title = data.title;
+        product.seoTitle = data.seoTitle;
+        product.seoDescription = data.seoDescription;
+        product.seoKeyword = data.seoKeyword || "";
         product.product_category_id = data.product_category_id || "";
         product.brand_id = data.brand_id || "";
         product.description = data.description;

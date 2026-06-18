@@ -32,25 +32,27 @@ Mỗi module được thiết kế theo cấu trúc thư mục rõ ràng. Chi ti
 ### 📦 Nhóm Sản phẩm & Mua sắm (E-Commerce)
 | Module | File Docs Chi Tiết | Controller & Service | Nghiệp Vụ Chính (Business Rules) |
 | :--- | :--- | :--- | :--- |
-| **Product** | `Docs/Modules/Product.md` | `product.*.js` | Quản lý sản phẩm. Hỗ trợ **Tìm kiếm bằng giọng nói** (Voice Search). Giá hiển thị = `price - (price * discountPercentage)`. Xóa mềm. Ảnh lưu trên Cloudinary. |
+| **Product** | `Docs/Modules/Product.md` | `product.*.js` | Quản lý sản phẩm. Hỗ trợ **Tìm kiếm bằng giọng nói** (Voice Search), **Lịch sử xem sản phẩm** (Recently Viewed). Tích hợp **Trợ lý SEO tự động (SEO Analyzer)** chấm điểm chuẩn SEO real-time khi tạo/sửa. Giá hiển thị = `price - (price * discountPercentage)`. Xóa mềm. Ảnh lưu trên Cloudinary. |
 | **Category**| `Docs/Modules/ProductCategory.md`| `product-category.*.js` | Danh mục đa cấp (Tree). Cần dùng helper `createTree` để đệ quy danh mục cha-con. |
 | **Cart** | `Docs/Modules/Cart.md` | `cart.*.js` | Quản lý giỏ hàng qua `cartId` (lưu Cookie 30 ngày). **Tự động chọn biến thể đầu tiên** nếu thêm nhanh. Cộng dồn số lượng nếu trùng Product/Variant. |
-| **Order** | `Docs/Modules/Order.md` | `order.*.js` | Checkout từ Cart. **Bắt buộc Snapshot** giá/tên sản phẩm tại thời điểm mua. Trừ stock khi thanh toán. Hỗ trợ VNPAY & COD. |
+| **Order** | `Docs/Modules/Order.md` | `order.*.js` | Checkout từ Cart. **Bắt buộc Snapshot** giá/tên sản phẩm tại thời điểm mua. Trừ stock khi thanh toán. Hỗ trợ VNPAY, **ZaloPay**, COD. Tự động gửi **Email xác nhận đơn hàng**. |
 | **Marketing**| `Docs/Modules/Marketing.md`| `flash-sale.*`, `discount.*`| Quản lý Flash sale (có startTime/endTime) và Discount code. Có kiểm tra số lượt dùng và số lượng stock riêng cho Flash sale. |
 
 ### 👥 Nhóm Tài khoản & Phân quyền (Auth & RBAC)
-| Module | File Docs Chi Tiết | Controller & Service | Nghiệp Vụ Chính (Business Rules) |
-| :--- | :--- | :--- | :--- |
-| **Auth** | `Docs/Modules/Auth.md` | `auth.*.js` | Tách biệt Admin (Local Login) và Client (Local, Google/FB OAuth). Sử dụng JWT/Session Token. Password mã hóa Bcrypt. |
-| **Account**| `Docs/Modules/Account.md` | `account.*.js` | Tài khoản nội bộ (Admin). Liên kết với `role_id`. Nếu status `inactive` sẽ không thể đăng nhập. |
-| **Role** | `Docs/Modules/Role.md` | `role.*.js` | Quản lý vai trò (Super Admin, Editor). Lưu permissions dưới dạng mảng các chuỗi (`["view", "edit"]`). Cấu hình bằng ma trận quyền (Matrix Table). |
+| Module | Docs | Files chính | Ghi chú quan trọng |
+|---|---|---|---|
+| **User (Client)**| - | `user.*.js` | Khách hàng đăng ký/đăng nhập. Có quên mật khẩu (gửi mã OTP qua email). Mật khẩu mã hóa MD5. |
+| **Admin Account**| - | `account.*.js`| Tài khoản quản trị. Liên kết với bảng `Role` qua `role_id`. Đăng nhập tạo `token` riêng trong cookie. |
+| **Role (RBAC)**| `Docs/Modules/Role.md` | `role.*.js` | Quản lý phân quyền. Admin dashboard render menu dựa trên mảng `permissions` của `res.locals.role`. Ví dụ: `products_view`, `orders_edit`. |
 
-### 🛠️ Nhóm Tiện ích & Chăm sóc khách hàng
-| Module | File Docs Chi Tiết | Controller & Service | Nghiệp Vụ Chính (Business Rules) |
-| :--- | :--- | :--- | :--- |
+### 📰 Nhóm Tương tác & Nội dung
+| Module | Docs | Files chính | Ghi chú quan trọng |
+|---|---|---|---|
+| **Article (Blog)**| `Docs/Modules/Article.md` | `article.*.js` | Tin tức, bài viết. Hỗ trợ phân mục đa cấp tương tự Product. Tích hợp **Trợ lý SEO tự động (SEO Analyzer)** chấm điểm chuẩn SEO real-time (tương tự Yoast SEO) và gen meta tags. |
 | **Chat** | `Docs/Modules/Chat.md` | `chat.*.js`, `sockets/` | Tích hợp Socket.io. Chat riêng tư giữa 1 Client (`room_chat_id` riêng) và Admin. Lưu tin nhắn vào DB có phân biệt `sender_type`. |
 | **Review** | `Docs/Modules/Review.md` | `review.*.js` | Khách hàng đánh giá 1-5 sao sau khi mua hàng. Admin có thể trả lời (`replies` lồng nhau). |
 | **Log** | `Docs/Modules/ActivityLog.md`| `activity-log.*.js` | Ghi lại hành động của Admin (CRUD) dưới dạng Fire-and-Forget (không làm chậm app). Tự động xóa log sau 90 ngày (TTL MongoDB). |
+| **Setting**| `Docs/Modules/Settings.md` | `setting.*.js`, `setting-seo.*.js` | Quản lý cấu hình chung (Logo, liên hệ, giao diện trang chủ). Tích hợp **Setting SEO** cho phép chỉnh sửa Meta tags toàn cục, tự động xuất file `robots.txt` động và tự chèn mã tracking **Google Analytics 4**. Dữ liệu được nạp tự động qua middleware ở mọi route client. |
 
 ---
 **📍 HƯỚNG DẪN DÀNH CHO AI KHI NHẬN TASK:**

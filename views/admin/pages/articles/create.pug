@@ -52,6 +52,72 @@ block main
                 option(value="active") Hoạt động
                 option(value="inactive") Dừng hoạt động
 
+          //- Cấu hình SEO & SEO Analyzer
+          .admin-form-group-card.mt-4.mb-3.p-3.border.rounded(style="background-color: #f8f9fa;")
+            h6.mb-4(style="font-size: 1.1rem; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 10px;")
+              | Cấu hình & Phân tích SEO tự động
+            
+            .row
+              .col-12.col-xl-7
+                .form-group
+                  label.form-label Từ khóa SEO chính (Focus Keyword)
+                  input.form-input.seo-input#seoKeyword(
+                    type="text"
+                    name="seoKeyword"
+                    placeholder="VD: xu hướng công nghệ 2024..."
+                  )
+                  .form-text Từ khóa bạn muốn bài viết này lên top Google.
+                
+                .form-group.mt-3
+                  label.form-label SEO Title
+                    span.seo-count#seoTitleCount(style="font-size: 12px; margin-left: 5px; font-weight: normal;")  (0/60)
+                  input.form-input.seo-input(
+                    type="text"
+                    name="seoTitle"
+                    id="seoTitle"
+                    placeholder="Tiêu đề hiển thị trên Google..."
+                    data-max="60"
+                    data-count-id="seoTitleCount"
+                  )
+                
+                .form-group
+                  label.form-label SEO Description
+                    span.seo-count#seoDescCount(style="font-size: 12px; margin-left: 5px; font-weight: normal;")  (0/160)
+                  textarea.form-input.form-textarea.seo-input(
+                    name="seoDescription"
+                    id="seoDescription"
+                    placeholder="Mô tả hiển thị trên Google..."
+                    rows="3"
+                    data-max="160"
+                    data-count-id="seoDescCount"
+                  )
+              
+              .col-12.col-xl-5.mt-3.mt-xl-0
+                .seo-analyzer-panel.p-3.border.rounded(style="background-color: #fff; height: 100%;")
+                  h6.mb-3(style="font-size: 0.95rem; font-weight: 700;") 
+                    | Đánh giá SEO: 
+                    span#seoScoreBadge.badge.bg-secondary(style="font-size: 0.85rem;") Chưa có dữ liệu
+                  
+                  ul.list-unstyled.seo-checklist(style="font-size: 0.85rem; line-height: 1.8;")
+                    li.mb-2#checkTitleLen
+                      i.fas.fa-times-circle.text-danger.mr-2
+                      | Độ dài SEO Title (40 - 60 ký tự)
+                    li.mb-2#checkDescLen
+                      i.fas.fa-times-circle.text-danger.mr-2
+                      | Độ dài SEO Description (120 - 160 ký tự)
+                    li.mb-2#checkFocusTitle
+                      i.fas.fa-times-circle.text-danger.mr-2
+                      | Từ khóa chính nằm trong SEO Title
+                    li.mb-2#checkFocusDesc
+                      i.fas.fa-times-circle.text-danger.mr-2
+                      | Từ khóa chính nằm trong SEO Description
+                    li.mb-2#checkFocusContent
+                      i.fas.fa-times-circle.text-danger.mr-2
+                      | Từ khóa chính nằm trong Nội dung
+                    li.mb-0#checkContentLen
+                      i.fas.fa-times-circle.text-danger.mr-2
+                      | Nội dung bài viết đủ dài (> 300 từ)
+
         .form-col.form-col-side
           .form-group
             label.form-label Ảnh thumbnail
@@ -78,3 +144,4 @@ block append scripts
   script(src="/admin/js/upload-preview.js")
   script(src="/admin/libs/tinymce/tinymce.min.js")
   script(src="/admin/js/tinymce-init.js")
+  script(src="/admin/js/seo-checker.js")

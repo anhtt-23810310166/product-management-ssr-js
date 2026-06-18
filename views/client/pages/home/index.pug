@@ -14,49 +14,73 @@ block main
 
   .container
     //- ===== 1. HERO BANNER =====
-    .tz-hero-banner
-      .row.align-items-center
-        .col-lg-6.col-md-8.p-5
-          .badge.badge-primary.mb-3.tz-badge MỚI RA MẮT
-          h1.tz-hero-title iPhone 15 Pro Max#[br] Titan Tự Nhiên
-          p.tz-hero-desc.mt-3 Khung viền titan. Chip A17 Pro mạnh mẽ. Nút Tác Vụ hoàn toàn mới. Sẵn hàng ngay hôm nay.
-          .mt-4.d-flex
-            a.btn.btn-light.tz-hero-btn.mr-3(href="/products/detail/iphone-15-pro-max-titan-tu-nhien")
-              span.font-weight-bold.text-dark Mua ngay
-            a.btn.btn-outline-light.tz-hero-btn(href="/products/detail/iphone-15-pro-max-titan-tu-nhien")
-              span Xem chi tiết
+    if settingGeneral && settingGeneral.heroBanner && settingGeneral.heroBanner.title
+      .tz-hero-banner(style=`background-image: url('${settingGeneral.heroBanner.image}'); background-size: cover; background-position: center;`)
+        .row.align-items-center
+          .col-lg-6.col-md-8.p-5
+            .badge.badge-primary.mb-3.tz-badge MỚI RA MẮT
+            h1.tz-hero-title!= settingGeneral.heroBanner.title
+            p.tz-hero-desc.mt-3= settingGeneral.heroBanner.desc
+            .mt-4.d-flex
+              if settingGeneral.heroBanner.buttonLink && settingGeneral.heroBanner.buttonText
+                a.btn.btn-light.tz-hero-btn.mr-3(href=settingGeneral.heroBanner.buttonLink)
+                  span.font-weight-bold.text-dark= settingGeneral.heroBanner.buttonText
+                a.btn.btn-outline-light.tz-hero-btn(href=settingGeneral.heroBanner.buttonLink)
+                  span Xem chi tiết
+    else
+      .tz-hero-banner
+        .row.align-items-center
+          .col-lg-6.col-md-8.p-5
+            .badge.badge-primary.mb-3.tz-badge MỚI RA MẮT
+            h1.tz-hero-title iPhone 15 Pro Max#[br] Titan Tự Nhiên
+            p.tz-hero-desc.mt-3 Khung viền titan. Chip A17 Pro mạnh mẽ. Nút Tác Vụ hoàn toàn mới. Sẵn hàng ngay hôm nay.
+            .mt-4.d-flex
+              a.btn.btn-light.tz-hero-btn.mr-3(href="/products")
+                span.font-weight-bold.text-dark Mua ngay
+              a.btn.btn-outline-light.tz-hero-btn(href="/products")
+                span Xem chi tiết
 
     //- ===== 2. FEATURES BAR =====
     .tz-features.mt-3.mb-5
       .row
-        .col-lg-3.col-md-6.mb-3.mb-lg-0
-          .tz-feature-item.d-flex.align-items-center
-            .icon-wrap.rounded-circle.mr-3
-              i.fas.fa-shield-alt
-            div
-              h6.mb-0 100% Chính hãng
-              small.text-muted Cam kết chất lượng
-        .col-lg-3.col-md-6.mb-3.mb-lg-0
-          .tz-feature-item.d-flex.align-items-center
-            .icon-wrap.rounded-circle.mr-3
-              i.fas.fa-truck
-            div
-              h6.mb-0 Miễn phí vận chuyển
-              small.text-muted Đơn từ 500k
-        .col-lg-3.col-md-6.mb-3.mb-lg-0
-          .tz-feature-item.d-flex.align-items-center
-            .icon-wrap.rounded-circle.mr-3
-              i.fas.fa-sync-alt
-            div
-              h6.mb-0 Bảo hành 12 tháng
-              small.text-muted Tại các trung tâm
-        .col-lg-3.col-md-6.mb-3.mb-lg-0
-          .tz-feature-item.d-flex.align-items-center
-            .icon-wrap.rounded-circle.mr-3
-              i.fas.fa-headset
-            div
-              h6.mb-0 Hỗ trợ 24/7
-              small.text-muted Tư vấn nhiệt tình
+        if settingGeneral && settingGeneral.features && settingGeneral.features.length > 0
+          each feature in settingGeneral.features
+            .col-lg-3.col-md-6.mb-3.mb-lg-0
+              .tz-feature-item.d-flex.align-items-center
+                .icon-wrap.rounded-circle.mr-3
+                  i(class=(feature.icon || "fas fa-star"))
+                div
+                  h6.mb-0= feature.title
+                  small.text-muted= feature.desc
+        else
+          .col-lg-3.col-md-6.mb-3.mb-lg-0
+            .tz-feature-item.d-flex.align-items-center
+              .icon-wrap.rounded-circle.mr-3
+                i.fas.fa-shield-alt
+              div
+                h6.mb-0 100% Chính hãng
+                small.text-muted Cam kết chất lượng
+          .col-lg-3.col-md-6.mb-3.mb-lg-0
+            .tz-feature-item.d-flex.align-items-center
+              .icon-wrap.rounded-circle.mr-3
+                i.fas.fa-truck
+              div
+                h6.mb-0 Miễn phí vận chuyển
+                small.text-muted Đơn từ 500k
+          .col-lg-3.col-md-6.mb-3.mb-lg-0
+            .tz-feature-item.d-flex.align-items-center
+              .icon-wrap.rounded-circle.mr-3
+                i.fas.fa-sync-alt
+              div
+                h6.mb-0 Bảo hành 12 tháng
+                small.text-muted Tại các trung tâm
+          .col-lg-3.col-md-6.mb-3.mb-lg-0
+            .tz-feature-item.d-flex.align-items-center
+              .icon-wrap.rounded-circle.mr-3
+                i.fas.fa-headset
+              div
+                h6.mb-0 Hỗ trợ 24/7
+                small.text-muted Tư vấn nhiệt tình
 
     //- ===== 3. DANH MỤC NỔI BẬT =====
     if productCategories && productCategories.length > 0
@@ -153,21 +177,41 @@ block main
 
     //- ===== 7. DOUBLE BANNERS =====
     .row.mb-5
-      .col-md-6.mb-4.mb-md-0
-        .tz-mini-banner.position-relative.rounded.overflow-hidden
-          img.w-100(src="https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1600&auto=format&fit=crop")
-          .tz-mini-banner-content.position-absolute.p-3.d-flex.flex-column.align-items-start.justify-content-center.bg-gradient-dark-right
-            span.badge.bg-white.text-dark.mb-2.tz-mini-banner-badge GAMING GEAR
-            h4.text-white.font-weight-bold Nâng tầm trải nghiệm#[br] chiến game đỉnh cao
-            a.btn.btn-primary.mt-2.tz-mini-banner-btn(href="/products") Khám phá ngay
+      if settingGeneral && settingGeneral.doubleBanners && settingGeneral.doubleBanners.length > 0
+        each banner, idx in settingGeneral.doubleBanners
+          .col-md-6.mb-4.mb-md-0
+            .tz-mini-banner.position-relative.rounded.overflow-hidden
+              img.w-100(src=(banner.image || "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1600&auto=format&fit=crop"))
+              .tz-mini-banner-content.position-absolute.p-3.d-flex.flex-column.align-items-start.justify-content-center(class=(idx === 0 ? "bg-gradient-dark-right" : "bg-gradient-dark-light-right"))
+                if banner.badge
+                  span.badge.bg-white.text-dark.mb-2.tz-mini-banner-badge= banner.badge
+                if banner.title
+                  h4.text-white.font-weight-bold!= banner.title
+                if banner.buttonText && banner.link
+                  a.btn.mt-2.tz-mini-banner-btn(href=banner.link class=(idx === 0 ? "btn-primary" : "btn-light"))= banner.buttonText
+      else
+        .col-md-6.mb-4.mb-md-0
+          .tz-mini-banner.position-relative.rounded.overflow-hidden
+            img.w-100(src="https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1600&auto=format&fit=crop")
+            .tz-mini-banner-content.position-absolute.p-3.d-flex.flex-column.align-items-start.justify-content-center.bg-gradient-dark-right
+              span.badge.bg-white.text-dark.mb-2.tz-mini-banner-badge GAMING GEAR
+              h4.text-white.font-weight-bold Nâng tầm trải nghiệm#[br] chiến game đỉnh cao
+              a.btn.btn-primary.mt-2.tz-mini-banner-btn(href="/products") Khám phá ngay
 
-      .col-md-6
-        .tz-mini-banner.position-relative.rounded.overflow-hidden
-          img.w-100(src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=1600&auto=format&fit=crop")
-          .tz-mini-banner-content.position-absolute.p-3.d-flex.flex-column.align-items-start.justify-content-center.bg-gradient-dark-light-right
-            span.badge.bg-white.text-dark.mb-2.tz-mini-banner-badge VĂN PHÒNG
-            h4.text-white.font-weight-bold Laptop doanh nhân#[br] Mỏng nhẹ & Mạnh mẽ
-            a.btn.btn-light.mt-2.tz-mini-banner-btn(href="/products") Xem bộ sưu tập
+        .col-md-6
+          .tz-mini-banner.position-relative.rounded.overflow-hidden
+            img.w-100(src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=1600&auto=format&fit=crop")
+            .tz-mini-banner-content.position-absolute.p-3.d-flex.flex-column.align-items-start.justify-content-center.bg-gradient-dark-light-right
+              span.badge.bg-white.text-dark.mb-2.tz-mini-banner-badge VĂN PHÒNG
+              h4.text-white.font-weight-bold Laptop doanh nhân#[br] Mỏng nhẹ & Mạnh mẽ
+              a.btn.btn-light.mt-2.tz-mini-banner-btn(href="/products") Xem bộ sưu tập
+
+    //- ===== LỊCH SỬ XEM SẢN PHẨM =====
+    .tz-section.mb-5#recentlyViewedSection(style="display:none;")
+      .d-flex.justify-content-between.align-items-end.mb-4
+        div
+          h4.tz-section-title.mb-1 Sản phẩm bạn vừa xem
+      .row#recentlyViewedList
 
     //- ===== 8. TIN TỨC & BÀI VIẾT =====
     if featuredArticles && featuredArticles.length > 0

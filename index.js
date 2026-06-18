@@ -51,6 +51,13 @@ app.use(passport.initialize());
 const systemConfig = require("./config/system");
 systemConfig(app);
 
+// Middlewares
+const settingMiddleware = require("./middlewares/client/setting.middleware");
+const settingSeoMiddleware = require("./middlewares/client/setting-seo.middleware");
+
+app.use(settingMiddleware.settingGeneral);
+app.use(settingSeoMiddleware.settingSeo);
+
 // Routes
 route(app);
 adminRoutes(app);
