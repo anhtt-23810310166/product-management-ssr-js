@@ -1712,20 +1712,24 @@ body.admin-page {
 .form-input {
   width: 100%;
   padding: 9px 14px;
-  border: 1px solid var(--border-color);
+  border: 1px solid #cbd5e1;
   border-radius: 4px;
   font-size: 0.85rem;
   color: var(--text-primary);
-  background: var(--content-bg);
+  background: #ffffff;
   transition: var(--transition);
   font-family: inherit;
+}
+
+.form-input:hover {
+  border-color: #94a3b8;
 }
 
 .form-input:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(62, 151, 255, 0.12);
   outline: none;
-  background: #fff;
+  background: #ffffff;
 }
 
 .form-input::placeholder {
