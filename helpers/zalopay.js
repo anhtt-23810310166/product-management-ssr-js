@@ -1,6 +1,5 @@
-const axios = require('axios').default;
-const CryptoJS = require('crypto-js');
-const moment = require('moment'); // Required for formatting ZaloPay app_time. Need to install moment.
+const crypto = require("crypto");
+const dayjs = require("dayjs");
 
 // Config cho môi trường Sandbox
 const config = {
@@ -15,10 +14,10 @@ module.exports.createPaymentUrl = async (orderId, amount, itemStr, username) => 
     const transID = Math.floor(Math.random() * 1000000);
     const order = {
         app_id: config.app_id,
-        app_trans_id: `${moment().format('YYMMDD')}_${transID}`, // Mã giao dịch ZaloPay dạng YYMMDD_xxxxxx
+        app_trans_id: `${dayjs().format('YYMMDD')}_${transID}`, // Mã giao dịch ZaloPay dạng YYMMDD_xxxxxx
         app_user: username || "user123",
-        app_time: Date.now(), // timestamp miliseconds
-        item: JSON.stringify([{ itemid: orderId, itemname: "Thanh toán đơn hàng", itemprice: amount, itemquantity: 1 }]), // Tối thiểu phải có 1 item
+        app_time: Date.now(), // timestamp milliseconds
+        item: JSON.stringify([{ itemid: orderId, itemname: "Thanh toán đơn hàng", itemprice: amount, itemquantity: 1 }]),
         embed_data: JSON.stringify({
             redirecturl: `http://localhost:3000/cart/zalopay-return`,
             orderId: orderId.toString()
@@ -26,22 +25,27 @@ module.exports.createPaymentUrl = async (orderId, amount, itemStr, username) => 
         amount: amount,
         description: `TechZone - Thanh toán đơn hàng #${orderId}`,
         bank_code: "",
-        callback_url: `https://techzone.ngrok.app/cart/zalopay-callback` // Không quan trọng với localhost vì ko nhận được callback thật từ Sandbox ZaloPay, ta sẽ verify ở returnUrl.
+        callback_url: `https://techzone.ngrok.app/cart/zalopay-callback`
     };
 
-    // Tạo chữ ký (MAC)
-    const data = config.app_id + "|" + order.app_trans_id + "|" + order.app_user + "|" + order.amount + "|" + order.app_time + "|" + order.embed_data + "|" + order.item;
-    order.mac = CryptoJS.HmacSHA256(data, config.key1).toString();
+    // Tạo chữ ký (MAC) dùng native crypto
+    const data = `${config.app_id}|${order.app_trans_id}|${order.app_user}|${order.amount}|${order.app_time}|${order.embed_data}|${order.item}`;
+    order.mac = crypto.createHmac("sha256", config.key1).update(data).digest("hex");
 
     try {
-        const response = await axios.post(config.endpoint, null, { params: order });
-        if (response.data && response.data.return_code === 1) {
+        const url = new URL(config.endpoint);
+        Object.entries(order).forEach(([k, v]) => url.searchParams.append(k, v));
+
+        const response = await fetch(url.toString(), { method: "POST" });
+        const resData = await response.json();
+
+        if (resData && resData.return_code === 1) {
             return {
-                paymentUrl: response.data.order_url,
+                paymentUrl: resData.order_url,
                 appTransId: order.app_trans_id
             };
         } else {
-            console.error("ZaloPay Create Order Failed:", response.data);
+            console.error("ZaloPay Create Order Failed:", resData);
             return null;
         }
     } catch (err) {
@@ -52,11 +56,9 @@ module.exports.createPaymentUrl = async (orderId, amount, itemStr, username) => 
 
 // Hàm verify MAC khi ZaloPay callback hoặc redirect về
 module.exports.verifyReturnUrl = (reqQuery) => {
-    let { amount, appid, apptransid, bankcode, checksum, discountamount, pmcid, status } = reqQuery;
-    
-    // Checksum tính theo công thức: appid|apptransid|pmcid|bankcode|amount|discountamount|status
-    let dataStr = `${appid}|${apptransid}|${pmcid}|${bankcode}|${amount}|${discountamount}|${status}`;
-    let reqMac = CryptoJS.HmacSHA256(dataStr, config.key2).toString();
+    const { amount, appid, apptransid, bankcode, checksum, discountamount, pmcid, status } = reqQuery;
+    const dataStr = `${appid}|${apptransid}|${pmcid}|${bankcode}|${amount}|${discountamount}|${status}`;
+    const reqMac = crypto.createHmac("sha256", config.key2).update(dataStr).digest("hex");
 
     return reqMac === checksum;
 };
