@@ -27,6 +27,14 @@ html
       meta(property="og:image" content=settingGeneral.logo)
     meta(property="og:type" content="website")
 
+    //- Canonical URL (chống trùng lặp nội dung khi có query params)
+    if canonicalUrl
+      link(rel="canonical" href=canonicalUrl)
+
+    //- Google Search Console Verification
+    if settingSeo && settingSeo.googleVerification
+      meta(name="google-site-verification" content=settingSeo.googleVerification)
+
     //- Google Analytics (GA4)
     if settingSeo && settingSeo.googleAnalyticsId
       script(async src=`https://www.googletagmanager.com/gtag/js?id=${settingSeo.googleAnalyticsId}`)
@@ -87,3 +95,37 @@ html
     script(src="https://unpkg.com/swiper/swiper-bundle.min.js")
     script(src="/client/js/script.js")
     script(src="/client/js/recently-viewed.js")
+
+    //- Structured Data: BreadcrumbList (nếu trang truyền biến breadcrumbs)
+    if breadcrumbs && breadcrumbs.length
+      -
+        const breadcrumbSchema = {
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": breadcrumbs.map((b, i) => ({
+            "@type": "ListItem",
+            "position": i + 1,
+            "name": b.name,
+            "item": b.url
+          }))
+        }
+      script(type="application/ld+json").
+        !{JSON.stringify(breadcrumbSchema)}
+
+    //- Structured Data: Product (nếu trang truyền biến schemaProduct)
+    if schemaProduct
+      script(type="application/ld+json").
+        !{JSON.stringify(schemaProduct)}
+
+    //- Structured Data: WebSite
+    -
+      const websiteSchema = {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": settingGeneral && settingGeneral.websiteName ? settingGeneral.websiteName : "TechZone",
+        "url": settingGeneral && settingGeneral.websiteUrl ? settingGeneral.websiteUrl : "/"
+      }
+    script(type="application/ld+json").
+      !{JSON.stringify(websiteSchema)}
+
+    block append scripts

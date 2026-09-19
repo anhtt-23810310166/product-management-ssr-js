@@ -109,11 +109,22 @@ module.exports.detail = async (req, res) => {
             }).sort({ createdAt: -1 }).limit(4);
         }
 
+        // SEO: Canonical + Breadcrumbs
+        const baseUrl = (process.env.APP_URL || `${req.protocol}://${req.get("host")}`).replace(/\/+$/, "");
+        const canonicalUrl = `${baseUrl}/articles/${article.slug}`;
+        const breadcrumbs = [
+            { name: "Trang chủ", url: `${baseUrl}/` },
+            { name: "Tin tức & Blog", url: `${baseUrl}/articles` },
+            { name: article.title, url: canonicalUrl }
+        ];
+
         res.render("client/pages/articles/detail", {
             title: article.title,
             seoTitle: article.seoTitle || article.title,
             seoDescription: article.seoDescription || (article.description ? article.description.replace(/<[^>]*>?/gm, '').substring(0, 160) : ""),
             seoImage: article.thumbnail,
+            canonicalUrl: canonicalUrl,
+            breadcrumbs: breadcrumbs,
             article,
             relatedArticles
         });

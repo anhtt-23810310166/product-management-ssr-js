@@ -22,6 +22,29 @@ const adminRoutes = require("./routes/admin/index.route");
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Trust proxy (nhận diện đúng https và client IP qua Cloudflare, Nginx, Render, v.v.)
+app.set('trust proxy', 1);
+
+// Chuyển hướng ép buộc HTTPS trên môi trường Production (301 Permanent Redirect)
+if (process.env.NODE_ENV === 'production') {
+    app.use((req, res, next) => {
+        if (req.headers['x-forwarded-proto'] && req.headers['x-forwarded-proto'] !== 'https') {
+            return res.redirect(301, `https://${req.hostname}${req.originalUrl}`);
+        }
+        next();
+    });
+}
+
+// Chuẩn hóa URL: 301 Redirect bỏ dấu gạch chéo cuối trang (trailing slash) để tránh duplicate content
+app.use((req, res, next) => {
+    if (req.path.length > 1 && req.path.endsWith('/')) {
+        const query = req.url.slice(req.path.length);
+        const safePath = req.path.slice(0, -1);
+        return res.redirect(301, safePath + query);
+    }
+    next();
+});
+
 // Tạo HTTP server và gắn Socket.IO
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -34,7 +57,9 @@ app.set('view engine', 'pug');
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), {
+    maxAge: process.env.NODE_ENV === 'production' ? '7d' : '0'
+}));
 
 // Session & Flash
 app.use(cookieSession({

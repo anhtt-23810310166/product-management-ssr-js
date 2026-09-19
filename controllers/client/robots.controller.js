@@ -5,7 +5,8 @@ module.exports.index = async (req, res) => {
     try {
         const settingSeo = await SettingSeo.findOne({});
         
-        let robotsContent = "User-agent: *\nAllow: /\nSitemap: http://localhost:3000/sitemap.xml";
+        const baseUrl = (process.env.APP_URL || `${req.protocol}://${req.get("host")}`).replace(/\/+$/, "");
+        let robotsContent = `User-agent: *\nAllow: /\nSitemap: ${baseUrl}/sitemap.xml`;
 
         if (settingSeo && settingSeo.robotsTxt) {
             robotsContent = settingSeo.robotsTxt;

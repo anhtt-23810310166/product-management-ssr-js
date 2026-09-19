@@ -38,7 +38,7 @@ block main
               .tz-gallery-thumbs
                 each img, idx in allImages
                   .tz-gallery-thumb(class=(idx === 0 ? "active" : "") onclick="changeGalleryImage(this, '" + img + "')")
-                    img(src=img alt=`Ảnh ${idx + 1}`)
+                    img(src=img alt=`Ảnh ${idx + 1}` loading="lazy")
 
         //- Product Info
         .col-lg-7.col-md-6.pl-md-5

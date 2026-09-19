@@ -105,8 +105,13 @@ module.exports.index = async (req, res) => {
         const products = await Product.find(find)
             .sort(sortOption);
 
+        // SEO: Canonical URL (loại bỏ query params lọc/phân trang)
+        const baseUrl = (process.env.APP_URL || `${req.protocol}://${req.get("host")}`).replace(/\/+$/, "");
+        const canonicalUrl = currentCategory ? `${baseUrl}/products/${currentCategory.slug}` : `${baseUrl}/products`;
+
         res.render("client/pages/products/index", {
             title: keyword ? `Tìm kiếm: ${keyword}` : (currentCategory ? currentCategory.title : "Sản phẩm"),
+            canonicalUrl: canonicalUrl,
             products,
             currentCategory,
             keyword,
@@ -312,11 +317,56 @@ module.exports.detail = async (req, res) => {
         // Sản phẩm thường mua kèm (phân tích từ lịch sử đơn hàng)
         const frequentlyBought = await getFrequentlyBought(product._id, 4);
 
+        // SEO: Canonical URL, Breadcrumbs, Schema Product
+        const baseUrl = (process.env.APP_URL || `${req.protocol}://${req.get("host")}`).replace(/\/+$/, "");
+        const canonicalUrl = `${baseUrl}/products/detail/${product.slug}`;
+
+        const breadcrumbs = [
+            { name: "Trang chủ", url: `${baseUrl}/` },
+            { name: "Sản phẩm", url: `${baseUrl}/products` }
+        ];
+        if (product.product_category_id) {
+            const cat = await ProductCategory.findById(product.product_category_id).select("title slug");
+            if (cat) breadcrumbs.push({ name: cat.title, url: `${baseUrl}/products/${cat.slug}` });
+        }
+        breadcrumbs.push({ name: product.title, url: canonicalUrl });
+
+        const finalPrice = flashDiscount
+            ? Math.round(product.price * (1 - flashDiscount.percentage / 100))
+            : (product.discountPercentage ? Math.round(product.price * (1 - product.discountPercentage / 100)) : product.price);
+
+        const schemaProduct = {
+            "@context": "https://schema.org",
+            "@type": "Product",
+            "name": product.title,
+            "image": product.thumbnail || undefined,
+            "description": (product.description || "").replace(/<[^>]*>?/gm, "").substring(0, 300),
+            "sku": product._id.toString(),
+            "brand": brand ? { "@type": "Brand", "name": brand.name } : undefined,
+            "offers": {
+                "@type": "Offer",
+                "url": canonicalUrl,
+                "priceCurrency": "VND",
+                "price": finalPrice,
+                "availability": product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
+            }
+        };
+        if (averageRating > 0) {
+            schemaProduct.aggregateRating = {
+                "@type": "AggregateRating",
+                "ratingValue": averageRating,
+                "reviewCount": reviews.length
+            };
+        }
+
         res.render("client/pages/products/detail", {
             title: product.title,
             seoTitle: product.seoTitle || product.title,
             seoDescription: product.seoDescription || (product.description ? product.description.replace(/<[^>]*>?/gm, '').substring(0, 160) : ""),
             seoImage: product.thumbnail,
+            canonicalUrl: canonicalUrl,
+            breadcrumbs: breadcrumbs,
+            schemaProduct: schemaProduct,
             product: product,
             brand: brand,
             reviews: reviews,

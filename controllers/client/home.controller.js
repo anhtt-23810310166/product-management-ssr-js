@@ -63,8 +63,11 @@ module.exports.index = async (req, res) => {
             };
         }
 
+        const baseUrl = (process.env.APP_URL || `${req.protocol}://${req.get("host")}`).replace(/\/+$/, "");
+
         res.render("client/pages/home/index", {
             title: "Trang chủ",
+            canonicalUrl: `${baseUrl}/`,
             featuredProducts,
             newestProducts,
             featuredArticles,

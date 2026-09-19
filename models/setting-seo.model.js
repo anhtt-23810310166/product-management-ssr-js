@@ -7,6 +7,7 @@ const settingSeoSchema = new mongoose.Schema(
         metaKeywords: String,
         ogImage: String,
         googleAnalyticsId: String,
+        googleVerification: String,
         robotsTxt: String
     },
     {

@@ -67,6 +67,16 @@ block main
                 placeholder="VD: G-XXXXXXXXXX"
               )
               .form-text Mã theo dõi GA4 (Thẻ script sẽ được tự động chèn vào trang).
+
+            .form-group.mt-3
+              label.form-label Google Search Console (Mã xác minh)
+              input.form-input(
+                type="text"
+                name="googleVerification"
+                value=(settingSeo ? settingSeo.googleVerification : "")
+                placeholder="VD: abc123xyz..."
+              )
+              .form-text Mã content trong thẻ meta google-site-verification. Lấy từ Google Search Console.
               
             .form-group.mt-3
               label.form-label Nội dung file robots.txt

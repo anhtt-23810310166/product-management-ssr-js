@@ -6,7 +6,7 @@ const systemConfig = require("../../config/system");
 // [GET] /sitemap.xml
 module.exports.index = async (req, res) => {
     try {
-        const baseUrl = "http://localhost:3000"; // Trong thực tế sẽ lấy từ biến môi trường hoặc config
+        const baseUrl = (process.env.APP_URL || `${req.protocol}://${req.get("host")}`).replace(/\/+$/, "");
 
         // Lấy tất cả Sản phẩm đang hoạt động
         const products = await Product.find({
